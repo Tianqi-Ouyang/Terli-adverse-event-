@@ -1,0 +1,35 @@
+# R / RStudio files
+.Rhistory
+.RData
+.Rproj.user/
+.Ruserdata
+
+# Data files (do not track raw data)
+*.xlsx
+*.xls
+*.sav
+*.sas7bdat
+*.rds
+*.rda
+
+# Common data directories
+data/
+Data/
+datasets/
+output/
+outputs/
+
+# OS files
+.DS_Store
+
+# Temp files
+~$*
+
+# Quarto cache
+docs/.quarto/
+
+# Claude worktrees
+.claude/worktrees/
+
+# Keep settings
+!.claude/settings.local.json

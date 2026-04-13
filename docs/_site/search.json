@@ -1,0 +1,121 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Adverse Event Analysis — Summary",
+    "section": "",
+    "text": "This sub-project of the HARMONY Terlipressin Registry analyzes adverse events (AE) associated with terlipressin treatment in patients with hepatorenal syndrome-acute kidney injury (HRS-AKI) across 15 hospitals."
+  },
+  {
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "Adverse Event Analysis — Summary",
+    "section": "",
+    "text": "This sub-project of the HARMONY Terlipressin Registry analyzes adverse events (AE) associated with terlipressin treatment in patients with hepatorenal syndrome-acute kidney injury (HRS-AKI) across 15 hospitals."
+  },
+  {
+    "objectID": "index.html#data-pipeline",
+    "href": "index.html#data-pipeline",
+    "title": "Adverse Event Analysis — Summary",
+    "section": "Data Pipeline",
+    "text": "Data Pipeline\n\n\n\n\n\nflowchart TD\n    A[Parent Project: final_master_01282026.xlsx] --&gt; B[Load & type-convert columns]\n    B --&gt; C[Derive AE variables]\n    C --&gt; D[Descriptive Tables]\n    C --&gt; E[Regression Models]\n    C --&gt; F[Subgroup Analyses]\n    D --&gt; G[CSV outputs in results/]\n    E --&gt; G\n    F --&gt; G"
+  },
+  {
+    "objectID": "index.html#adverse-event-definitions",
+    "href": "index.html#adverse-event-definitions",
+    "title": "Adverse Event Analysis — Summary",
+    "section": "Adverse Event Definitions",
+    "text": "Adverse Event Definitions\n\n\n\nVariable\nDefinition\nType\n\n\n\n\nany_ae\nAny adverse event\nBinary\n\n\nabdominal_ae\nabdpain OR diarrhea OR nausea\nComposite\n\n\nserious_ae\nrespfail OR brady OR terli_7 OR terli_8\nComposite\n\n\nterli_ae_abdpain\nAbdominal pain\nIndividual\n\n\nterli_ae_nausea\nNausea\nIndividual\n\n\nterli_ae_diarrhea\nDiarrhea\nIndividual\n\n\nterli_ae_volover\nVolume overload\nIndividual\n\n\nterli_ae_brady\nBradycardia\nIndividual\n\n\nterli_ae_respfail\nRespiratory failure\nIndividual\n\n\nterli_7\nIschemic event 1\nIndividual\n\n\nterli_8\nIschemic event 2\nIndividual"
+  },
+  {
+    "objectID": "index.html#other-key-derived-variables",
+    "href": "index.html#other-key-derived-variables",
+    "title": "Adverse Event Analysis — Summary",
+    "section": "Other Key Derived Variables",
+    "text": "Other Key Derived Variables\n\n\n\n\n\n\n\nVariable\nFormula\n\n\n\n\nBMI\naki_weight / (aki_height/100)^2\n\n\nmeld_fda\n1 if coalesce(day0_meld, admit_meld, admit_meld_3) &gt; 35\n\n\nrrt_90days\n1 if days_to_rrt &lt;= 90\n\n\nlt_90days\n1 if time_to_transplant &lt;= 90"
+  },
+  {
+    "objectID": "index.html#analysis-summary",
+    "href": "index.html#analysis-summary",
+    "title": "Adverse Event Analysis — Summary",
+    "section": "Analysis Summary",
+    "text": "Analysis Summary\n\n1. AE Incidence by Extended Criteria (Tables)\nStratified AE rates comparing standard vs. extended terlipressin criteria:\n\n\n\nTable\nStratification Variable\n\n\n\n\ntable1_criteria_2.csv\nACLF criteria (criteria_2)\n\n\ntable1_criteria_3.csv\nsCr criteria (criteria_3)\n\n\ntable1_criteria_4.csv\nHypoxemia criteria (criteria_4)\n\n\n\n\n\n2. Baseline Characteristics by AE Type (Tables)\nFull baseline characteristics stratified by AE occurrence:\n\n\n\n\n\n\n\nTable\nColumn Variable\n\n\n\n\ntable1_any_ae.csv\nAny AE (any_ae)\n\n\ntable1_abdominal_ae.csv\nAbdominal AE (abdominal_ae)\n\n\ntable1_serious_ae.csv\nSerious AE (serious_ae)\n\n\ntable1_terli_ae_respfail.csv\nRespiratory failure (terli_ae_respfail)\n\n\n\n\n\n2b. AE Cross-Tabulations (04/07/2026 Update)\nNew variables added to stratified tables:\n\n\n\n\n\n\n\nVariable\nDefinition\n\n\n\n\ncomb_effusion_edema\n4-level: 0=neither, 1=effusion only, 2=edema only, 3=both\n\n\nratio_albumin_b4terli\ntotalalbumin_before_terli / aki_weight\n\n\nratio_albumin_total\ntotal_albumin / aki_weight\n\n\n\nNew tables: serious_ae and terli_ae_respfail as column variables with AE cross-tabs.\n\n\n\n\n\n\nNote\n\n\n\nCoding fix applied: For patients with chest_imaging=1, missing chest_imaging_effusion and chest_imaging_pulmedema are set to 0.\n\n\n\n\n3. Logistic Regression — Predictors of AE\n\nUnivariable: scr_terli_day0, respiratory_f, aclf_grade → outcome any_ae\nMultivariable (original): aclf_grade + scr_terli_day0 + respiratory_f → outcome any_ae\nMultivariable (04/07/2026 update): sex_male + inr_admit + akin + chest_imaging_effusion → outcome any_ae\n\n\n\n4. Competing Risk Models — 90-Day Mortality\nUnivariable (Fine-Gray, failcode=1 death): All individual AE types + serious_ae\nMultivariable (4 models):\n\n\n\n\n\n\n\nModel\nCovariates\n\n\n\n\n1\nany_ae + age + race + hispanic + admit_meld_3 (updated 04/07/2026, was day0_meld)\n\n\n2\nany_ae + age + race + hispanic\n\n\n3\nserious_ae + age + race + hispanic + admit_meld_3\n\n\n4\nserious_ae + age + race + hispanic\n\n\n\n\n\n5. Subgroup: ICU Admission\n\nCohort: location_terli_day0 == 1 OR 2\nModel: Univariable logistic — any_ae → icu_admit\n\n\n\n6. Subgroup: Transplant-Listed Patients\n\nCohort: listed_transplant == 1\nModel: Univariable competing risk (failcode=2, transplant)\nCovariates: any_ae, serious_ae, hrs_responders_cat_2, day0_meld, aclf_grade, meld_fda"
+  },
+  {
+    "objectID": "index.html#code-files",
+    "href": "index.html#code-files",
+    "title": "Adverse Event Analysis — Summary",
+    "section": "Code Files",
+    "text": "Code Files\n\n\n\n\n\n\n\nFile\nDescription\n\n\n\n\nAdverse-event.Rmd\nOriginal analysis (01/2025 request)\n\n\nAdverse event 2026.Rmd\nUpdated analysis (01/2026 request, adds aclf_grade recoding)\n\n\ncode/Adverse-event.Rmd\nCopy in organized directory"
+  },
+  {
+    "objectID": "index.html#data-request-history",
+    "href": "index.html#data-request-history",
+    "title": "Adverse Event Analysis — Summary",
+    "section": "Data Request History",
+    "text": "Data Request History\n\n\n\n\n\n\n\n\nDate\nFile\nKey Changes\n\n\n\n\n11/26/2025\nrequests/...11262025.docx\nInitial request: criteria tables, univariable AE predictors, 90-day survival\n\n\n01/12/2025\nrequests/...01122025.docx\nAdded multivariable models, ICU subgroup, transplant subgroup\n\n\n01/18/2026\nrequests/...01182026.docx\nReformatted as column/row specifications\n\n\n01/29/2026\nrequests/...01292026.docx\nAdded serious_ae table, terli_ae_respfail table, Fine-Gray specification\n\n\n04/07/2026\nrequests/...04072026.docx\nNew variables (comb_effusion_edema, albumin ratios), updated multivariate models, SAE cross-tabs — IMPLEMENTED"
+  },
+  {
+    "objectID": "results.html",
+    "href": "results.html",
+    "title": "Results",
+    "section": "",
+    "text": "AE rates stratified by ACLF (criteria_2), sCr (criteria_3), and Hypoxemia (criteria_4) criteria.\n\n\nCode\nae_vars &lt;- c(\"any_ae\", \"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n             \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\", \"terli_ae_respfail\",\n             \"serious_ae\", \"comb_effusion_edema\", \"ratio_albumin_b4terli\", \"ratio_albumin_total\")\n\nae_cat_vars &lt;- c(\"any_ae\", \"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n                 \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\", \"terli_ae_respfail\",\n                 \"serious_ae\", \"comb_effusion_edema\")\n\nexact_vars &lt;- c(\"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n                \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\")\n\nfor (crit in c(\"criteria_2\", \"criteria_3\", \"criteria_4\")) {\n  create_table_one(\n    all_vars = ae_vars, cat_vars = ae_cat_vars,\n    data = final_master, exact = exact_vars,\n    strata = crit,\n    output = paste0('/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_', crit, '.csv')\n  )\n}"
+  },
+  {
+    "objectID": "results.html#criteria-tables",
+    "href": "results.html#criteria-tables",
+    "title": "Results",
+    "section": "",
+    "text": "AE rates stratified by ACLF (criteria_2), sCr (criteria_3), and Hypoxemia (criteria_4) criteria.\n\n\nCode\nae_vars &lt;- c(\"any_ae\", \"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n             \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\", \"terli_ae_respfail\",\n             \"serious_ae\", \"comb_effusion_edema\", \"ratio_albumin_b4terli\", \"ratio_albumin_total\")\n\nae_cat_vars &lt;- c(\"any_ae\", \"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n                 \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\", \"terli_ae_respfail\",\n                 \"serious_ae\", \"comb_effusion_edema\")\n\nexact_vars &lt;- c(\"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n                \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\")\n\nfor (crit in c(\"criteria_2\", \"criteria_3\", \"criteria_4\")) {\n  create_table_one(\n    all_vars = ae_vars, cat_vars = ae_cat_vars,\n    data = final_master, exact = exact_vars,\n    strata = crit,\n    output = paste0('/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_', crit, '.csv')\n  )\n}"
+  },
+  {
+    "objectID": "results.html#baseline-tables",
+    "href": "results.html#baseline-tables",
+    "title": "Results",
+    "section": "2. Baseline Characteristics by AE Type",
+    "text": "2. Baseline Characteristics by AE Type\n\nAny AE\n\n\nCode\ncreate_table_one(\n  all_vars = all_vars, cat_vars = categorical_vars,\n  data = final_master, strata = \"any_ae\",\n  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_any_ae.csv'\n)\n\n\n\n\nAbdominal AE\n\n\nCode\ncreate_table_one(\n  all_vars = all_vars, cat_vars = categorical_vars,\n  data = final_master, strata = \"abdominal_ae\",\n  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_abdominal_ae.csv'\n)\n\n\n\n\nSerious AE\n\n\nCode\ncreate_table_one(\n  all_vars = all_vars, cat_vars = categorical_vars,\n  data = final_master, strata = \"serious_ae\",\n  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_serious_ae.csv'\n)\n\n\n\n\nRespiratory Failure\n\n\nCode\ncreate_table_one(\n  all_vars = all_vars, cat_vars = categorical_vars,\n  data = final_master, strata = \"terli_ae_respfail\",\n  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_terli_ae_respfail.csv'\n)"
+  },
+  {
+    "objectID": "results.html#ae-cross-tables",
+    "href": "results.html#ae-cross-tables",
+    "title": "Results",
+    "section": "2b. AE Cross-Tabulations (04/07/2026 Update)",
+    "text": "2b. AE Cross-Tabulations (04/07/2026 Update)\n\nSAE (Serious AE as column)\n\n\nCode\nsae_vars &lt;- c(\"any_ae\", \"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n              \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\",\n              \"comb_effusion_edema\", \"ratio_albumin_b4terli\", \"ratio_albumin_total\")\n\nsae_cat_vars &lt;- c(\"any_ae\", \"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n                  \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\",\n                  \"terli_ae_respfail\", \"comb_effusion_edema\")\n\ncreate_table_one(\n  all_vars = sae_vars, cat_vars = sae_cat_vars,\n  data = final_master, strata = \"serious_ae\",\n  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_serious_ae_cross.csv'\n)\n\n\n\n\nRespiratory Failure (with new variables)\n\n\nCode\nrespfail_vars &lt;- c(\"any_ae\", \"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n                   \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\",\n                   \"serious_ae\", \"comb_effusion_edema\", \"ratio_albumin_b4terli\", \"ratio_albumin_total\")\n\nrespfail_cat_vars &lt;- c(\"any_ae\", \"terli_ae_abdpain\", \"terli_ae_nausea\", \"terli_ae_diarrhea\",\n                       \"terli_ae_volover\", \"terli_ae_brady\", \"terli_7\", \"terli_8\",\n                       \"serious_ae\", \"comb_effusion_edema\")\n\ncreate_table_one(\n  all_vars = respfail_vars, cat_vars = respfail_cat_vars,\n  data = final_master, strata = \"terli_ae_respfail\",\n  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_terli_ae_respfail_updated.csv'\n)"
+  },
+  {
+    "objectID": "results.html#aclf-table",
+    "href": "results.html#aclf-table",
+    "title": "Results",
+    "section": "3. ACLF Grade by AE Status",
+    "text": "3. ACLF Grade by AE Status\n\n\nCode\ntable1(~aclf_grade | any_ae, final_master)\n\n\n\n\n\n\n\n\n\n\n\n\n\n0\n(N=201)\n1\n(N=42)\nOverall\n(N=243)\n\n\n\n\naclf_grade\n\n\n\n\n\n1\n44 (21.9%)\n5 (11.9%)\n49 (20.2%)\n\n\n2\n73 (36.3%)\n12 (28.6%)\n85 (35.0%)\n\n\n3\n84 (41.8%)\n25 (59.5%)\n109 (44.9%)"
+  },
+  {
+    "objectID": "results.html#logistic",
+    "href": "results.html#logistic",
+    "title": "Results",
+    "section": "4. Logistic Regression — Predictors of Any AE",
+    "text": "4. Logistic Regression — Predictors of Any AE\n\nUnivariable\n\n\nCode\nfinal_master &lt;- final_master %&gt;% mutate_at(c(\"aclf_grade\", \"respiratory_f\"), as.factor)\n\nfinal_master %&gt;%\n  select(any_ae, scr_terli_day0, respiratory_f, aclf_grade) %&gt;%\n  tbl_uvregression(\n    method = glm,\n    method.args = list(family = binomial),\n    y = any_ae,\n    pvalue_fun = ~style_pvalue(.x, digits = 3),\n    exponentiate = TRUE\n  ) %&gt;%\n  modify_caption(\"**Univariable logistic regression for any adverse event**\") %&gt;%\n  bold_p(0.05) %&gt;%\n  bold_labels() %&gt;%\n  add_n()\n\n\n\n\n\n\nUnivariable logistic regression for any adverse event\n\n\n\n\n\n\n\n\n\nCharacteristic\nN\nOR1\n95% CI1\np-value\n\n\n\n\nscr_terli_day0\n243\n0.95\n0.67, 1.34\n0.781\n\n\nrespiratory_f\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.47\n0.32, 5.06\n0.572\n\n\naclf_grade\n243\n\n\n\n\n\n\n\n\n    1\n\n\n—\n—\n\n\n\n\n    2\n\n\n1.45\n0.50, 4.80\n0.514\n\n\n    3\n\n\n2.62\n1.01, 8.18\n0.066\n\n\n\n1 OR = Odds Ratio, CI = Confidence Interval\n\n\n\n\n\n\n\n\n\n\nMultivariable (04/07/2026 Update): sex_male + inr_admit + akin + chest_imaging_effusion\n\n\nCode\nfinal_master &lt;- final_master %&gt;% mutate_at(c(\"akin\"), as.factor)\n\nglm(any_ae ~ sex_male + inr_admit + akin + chest_imaging_effusion,\n    family = binomial, data = final_master) %&gt;%\n  tbl_regression(exponentiate = TRUE) %&gt;%\n  add_n() %&gt;%\n  bold_p(0.05) %&gt;%\n  bold_labels() %&gt;%\n  modify_caption(\"**Multivariable logistic regression for any adverse event (updated)**\")\n\n\n\n\n\n\nMultivariable logistic regression for any adverse event (updated)\n\n\n\n\n\n\n\n\n\nCharacteristic\nN\nOR1\n95% CI1\np-value\n\n\n\n\nsex_male\n182\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.59\n0.26, 1.34\n0.2\n\n\ninr_admit\n182\n1.07\n0.61, 1.81\n0.8\n\n\nakin\n182\n\n\n\n\n\n\n\n\n    1\n\n\n—\n—\n\n\n\n\n    2\n\n\n1.62\n0.58, 4.81\n0.4\n\n\n    3\n\n\n0.95\n0.33, 2.85\n&gt;0.9\n\n\nchest_imaging_effusion\n182\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n2.76\n1.21, 6.46\n0.017\n\n\n\n1 OR = Odds Ratio, CI = Confidence Interval"
+  },
+  {
+    "objectID": "results.html#cmprisk",
+    "href": "results.html#cmprisk",
+    "title": "Results",
+    "section": "5. Competing Risk Models — 90-Day Mortality",
+    "text": "5. Competing Risk Models — 90-Day Mortality\n\nUnivariable (Fine-Gray, failcode=1: death)\n\n\nCode\nfinal_master %&gt;%\n  select(any_ae, terli_ae_abdpain, terli_ae_nausea, terli_ae_diarrhea,\n         terli_ae_volover, terli_ae_brady, terli_7, terli_8,\n         terli_ae_respfail, serious_ae,\n         time_to_death_90days_cmp, time_to_death_status_90days_cmp) %&gt;%\n  tbl_uvregression(\n    method = tidycmprsk::crr,\n    method.args = list(failcode = 1, cencode = 0),\n    y = Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp),\n    pvalue_fun = ~style_pvalue(.x, digits = 3),\n    exponentiate = TRUE\n  )\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCharacteristic\nN\nHR1\n95% CI1\np-value\n\n\n\n\nany_ae\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.35\n0.79, 2.30\n0.270\n\n\nterli_ae_abdpain\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.44\n0.49, 4.25\n0.510\n\n\nterli_ae_nausea\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.29\n0.41, 4.03\n0.670\n\n\nterli_ae_diarrhea\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.85\n0.09, 7.69\n0.880\n\n\nterli_ae_volover\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.70\n0.14, 3.43\n0.660\n\n\nterli_ae_brady\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.38\n0.41, 4.58\n0.600\n\n\nterli_7\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.79\n0.79, 4.06\n0.160\n\n\nterli_8\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.78\n0.10, 5.94\n0.810\n\n\nterli_ae_respfail\n243\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.38\n0.66, 2.89\n0.390\n\n\nserious_ae\n243\n1.33\n0.71, 2.46\n0.370\n\n\n\n1 HR = Hazard Ratio, CI = Confidence Interval\n\n\n\n\n\n\n\n\n\n\nModel 1: any_ae + age + race + hispanic + admit_meld_3 (updated 04/07/2026)\n\n\nCode\ntidycmprsk::crr(\n  Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp) ~\n    any_ae + age + race + hispanic + admit_meld_3,\n  failcode = 1, cencode = 0, data = final_master\n) %&gt;%\n  tbl_regression(exp = TRUE) %&gt;%\n  add_n() %&gt;%\n  bold_p(0.05) %&gt;%\n  bold_labels()\n\n\n2 cases omitted due to missing values\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCharacteristic\nN\nHR1\n95% CI1\np-value\n\n\n\n\nany_ae\n241\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.23\n0.71, 2.10\n0.5\n\n\nage\n241\n1.02\n1.00, 1.04\n0.11\n\n\nrace\n241\n\n\n\n\n\n\n\n\n    1\n\n\n—\n—\n\n\n\n\n    2\n\n\n0.60\n0.20, 1.76\n0.4\n\n\n    3\n\n\n0.00\n0.00, 0.00\n&lt;0.001\n\n\n    4\n\n\n1.45\n0.81, 2.60\n0.2\n\n\nhispanic\n241\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.75\n0.42, 1.32\n0.3\n\n\nadmit_meld_3\n241\n1.03\n1.00, 1.06\n0.037\n\n\n\n1 HR = Hazard Ratio, CI = Confidence Interval\n\n\n\n\n\n\n\n\n\n\nModel 2: any_ae + age + race + hispanic\n\n\nCode\ntidycmprsk::crr(\n  Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp) ~\n    any_ae + age + race + hispanic,\n  failcode = 1, cencode = 0, data = final_master\n) %&gt;%\n  tbl_regression(exp = TRUE) %&gt;%\n  add_n() %&gt;%\n  bold_p(0.05) %&gt;%\n  bold_labels()\n\n\n2 cases omitted due to missing values\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCharacteristic\nN\nHR1\n95% CI1\np-value\n\n\n\n\nany_ae\n241\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.26\n0.73, 2.19\n0.4\n\n\nage\n241\n1.01\n0.99, 1.03\n0.3\n\n\nrace\n241\n\n\n\n\n\n\n\n\n    1\n\n\n—\n—\n\n\n\n\n    2\n\n\n0.65\n0.24, 1.75\n0.4\n\n\n    3\n\n\n0.00\n0.00, 0.00\n&lt;0.001\n\n\n    4\n\n\n1.54\n0.85, 2.81\n0.2\n\n\nhispanic\n241\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.72\n0.40, 1.29\n0.3\n\n\n\n1 HR = Hazard Ratio, CI = Confidence Interval\n\n\n\n\n\n\n\n\n\n\nModel 3: serious_ae + age + race + hispanic + admit_meld_3\n\n\nCode\ntidycmprsk::crr(\n  Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp) ~\n    serious_ae + age + race + hispanic + admit_meld_3,\n  failcode = 1, cencode = 0, data = final_master\n) %&gt;%\n  tbl_regression(exp = TRUE) %&gt;%\n  add_n() %&gt;%\n  bold_p(0.05) %&gt;%\n  bold_labels()\n\n\n2 cases omitted due to missing values\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCharacteristic\nN\nHR1\n95% CI1\np-value\n\n\n\n\nserious_ae\n241\n1.25\n0.66, 2.36\n0.5\n\n\nage\n241\n1.02\n1.00, 1.04\n0.12\n\n\nrace\n241\n\n\n\n\n\n\n\n\n    1\n\n\n—\n—\n\n\n\n\n    2\n\n\n0.59\n0.20, 1.74\n0.3\n\n\n    3\n\n\n0.00\n0.00, 0.00\n&lt;0.001\n\n\n    4\n\n\n1.47\n0.82, 2.64\n0.2\n\n\nhispanic\n241\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.74\n0.42, 1.30\n0.3\n\n\nadmit_meld_3\n241\n1.03\n1.00, 1.06\n0.036\n\n\n\n1 HR = Hazard Ratio, CI = Confidence Interval\n\n\n\n\n\n\n\n\n\n\nModel 4: serious_ae + age + race + hispanic\n\n\nCode\ntidycmprsk::crr(\n  Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp) ~\n    serious_ae + age + race + hispanic,\n  failcode = 1, cencode = 0, data = final_master\n) %&gt;%\n  tbl_regression(exp = TRUE) %&gt;%\n  add_n() %&gt;%\n  bold_p(0.05) %&gt;%\n  bold_labels()\n\n\n2 cases omitted due to missing values\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCharacteristic\nN\nHR1\n95% CI1\np-value\n\n\n\n\nserious_ae\n241\n1.28\n0.67, 2.44\n0.5\n\n\nage\n241\n1.01\n0.99, 1.03\n0.4\n\n\nrace\n241\n\n\n\n\n\n\n\n\n    1\n\n\n—\n—\n\n\n\n\n    2\n\n\n0.64\n0.24, 1.73\n0.4\n\n\n    3\n\n\n0.00\n0.00, 0.00\n&lt;0.001\n\n\n    4\n\n\n1.57\n0.87, 2.86\n0.14\n\n\nhispanic\n241\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.71\n0.40, 1.26\n0.2\n\n\n\n1 HR = Hazard Ratio, CI = Confidence Interval"
+  },
+  {
+    "objectID": "results.html#icu",
+    "href": "results.html#icu",
+    "title": "Results",
+    "section": "6. Subgroup: ICU Admission",
+    "text": "6. Subgroup: ICU Admission\nCohort: patients with location_terli_day0 == 1 or 2 (floor or step-down at terlipressin initiation).\n\n\nCode\nfinal_master_location &lt;- final_master %&gt;%\n  filter(location_terli_day0 == 1 | location_terli_day0 == 2)\n\nfinal_master_location %&gt;%\n  select(icu_admit, any_ae) %&gt;%\n  tbl_uvregression(\n    method = glm,\n    method.args = list(family = binomial),\n    y = icu_admit,\n    pvalue_fun = ~style_pvalue(.x, digits = 3),\n    exponentiate = TRUE\n  ) %&gt;%\n  bold_p(0.05) %&gt;%\n  bold_labels() %&gt;%\n  add_n()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCharacteristic\nN\nOR1\n95% CI1\np-value\n\n\n\n\nany_ae\n177\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n1.59\n0.73, 3.45\n0.238\n\n\n\n1 OR = Odds Ratio, CI = Confidence Interval"
+  },
+  {
+    "objectID": "results.html#transplant",
+    "href": "results.html#transplant",
+    "title": "Results",
+    "section": "7. Subgroup: Transplant-Listed Patients",
+    "text": "7. Subgroup: Transplant-Listed Patients\nCohort: listed_transplant == 1. Competing risk model with failcode=2 (transplant event).\n\n\nCode\nfinal_master_listed &lt;- final_master %&gt;% filter(listed_transplant == 1)\n\nfinal_master_listed %&gt;%\n  select(any_ae, serious_ae, hrs_responders_cat_2, day0_meld, aclf_grade,\n         meld_fda, time_to_death_90days_cmp, time_to_death_status_90days_cmp) %&gt;%\n  tbl_uvregression(\n    method = tidycmprsk::crr,\n    method.args = list(failcode = 2, cencode = 0),\n    y = Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp),\n    pvalue_fun = ~style_pvalue(.x, digits = 3),\n    exponentiate = TRUE\n  )\n\n\n15 cases omitted due to missing values\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCharacteristic\nN\nHR1\n95% CI1\np-value\n\n\n\n\nany_ae\n82\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.70\n0.30, 1.65\n0.420\n\n\nserious_ae\n82\n0.41\n0.09, 1.89\n0.250\n\n\nhrs_responders_cat_2\n82\n\n\n\n\n\n\n\n\n    0\n\n\n—\n—\n\n\n\n\n    1\n\n\n0.87\n0.51, 1.49\n0.620\n\n\nday0_meld\n67\n1.02\n0.98, 1.06\n0.340\n\n\naclf_grade\n82\n\n\n\n\n\n\n\n\n    1\n\n\n—\n—\n\n\n\n\n    2\n\n\n1.35\n0.69, 2.64\n0.390\n\n\n    3\n\n\n1.09\n0.56, 2.12\n0.800\n\n\nmeld_fda\n82\n0.82\n0.40, 1.69\n0.600\n\n\n\n1 HR = Hazard Ratio, CI = Confidence Interval"
+  }
+]

@@ -1,0 +1,453 @@
+---
+title: "Results"
+author: "Tianqi Ouyang"
+date: last-modified
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+library(tidyverse)
+library(tableone)
+library(writexl)
+library(gtsummary)
+library(survival)
+library(ggplot2)
+library(readxl)
+library(ggpubr)
+library(splines)
+library(xlsx)
+library(lattice)
+library(mice)
+library(DescTools)
+library(survminer)
+library(finalfit)
+library(tidycmprsk)
+library(ggsurvfit)
+library(car)
+library(cobalt)
+library(pammtools)
+library(adjustedCurves)
+library(rms)
+library(riskRegression)
+library(prodlim)
+library(dplyr)
+library(bodycompref)
+library(musclerefdata)
+library(transplantr)
+library(sqldf)
+library(table1)
+```
+
+```{r data-load, include=FALSE}
+final_master <- read_xlsx("/Users/to909/Desktop/Terlipressin projects/Terlipressin/data/final_master_01282026.xlsx")
+
+final_master <- final_master %>%
+  mutate(across(everything(), ~{
+    x_char <- as.character(.x)
+    if (all(grepl("^[-+]?[0-9]*\\.?[0-9]+$", x_char[!is.na(x_char)]))) {
+      as.numeric(x_char)
+    } else {
+      .x
+    }
+  }))
+
+final_master <- final_master %>%
+  mutate(
+    BMI = aki_weight / (aki_height/100)^2,
+    rrt_90days = ifelse(is.na(days_to_rrt), 0, ifelse(days_to_rrt <= 90, 1, 0)),
+    lt_90days = ifelse(is.na(time_to_transplant), 0, ifelse(time_to_transplant <= 90, 1, 0)),
+    rrt_status = case_when(
+      (days_to_rrt - time_to_transplant) == 0 ~ 0,
+      (days_to_rrt - time_to_transplant) < 0 ~ 1,
+      (days_to_rrt - time_to_transplant) > 0 ~ 2
+    ),
+    abdominal_ae = if_else(terli_ae_abdpain == 1 | terli_ae_diarrhea == 1 | terli_ae_nausea == 1, 1, 0),
+    serious_ae = if_else(terli_ae_respfail == 1 | terli_ae_brady == 1 | terli_7 == 1 | terli_8 == 1, 1, 0),
+    meld_fda_value = coalesce(day0_meld, admit_meld, admit_meld_3),
+    meld_fda = if_else(meld_fda_value > 35, 1, 0),
+    aclf_grade = ifelse(aclf_grade == 0, 1, aclf_grade)
+  )
+
+# --- 04/07/2026 updates ---
+# Coding fix: For chest_imaging=1, set missing effusion/edema to 0
+final_master <- final_master %>%
+  mutate(
+    chest_imaging_effusion = if_else(chest_imaging == 1 & is.na(chest_imaging_effusion), 0, chest_imaging_effusion),
+    chest_imaging_pulmedema = if_else(chest_imaging == 1 & is.na(chest_imaging_pulmedema), 0, chest_imaging_pulmedema)
+  )
+
+# New variables
+final_master <- final_master %>%
+  mutate(
+    comb_effusion_edema = case_when(
+      chest_imaging_effusion == 0 & chest_imaging_pulmedema == 0 ~ 0,
+      chest_imaging_effusion == 1 & chest_imaging_pulmedema == 0 ~ 1,
+      chest_imaging_effusion == 0 & chest_imaging_pulmedema == 1 ~ 2,
+      chest_imaging_effusion == 1 & chest_imaging_pulmedema == 1 ~ 3
+    ),
+    ratio_albumin_b4terli = totalalbumin_before_terli / aki_weight,
+    ratio_albumin_total = total_albumin / aki_weight
+  )
+
+final_master$time_to_death_status_90days_cmp <- as.factor(final_master$time_to_death_status_90days_cmp)
+```
+
+```{r table-one-function, include=FALSE}
+create_table_one <- function(all_vars, data, strata, output,
+                             cat_vars = NULL, exact = NULL) {
+  if (is.null(cat_vars)) {
+    numerical_vars <- all_vars
+  } else {
+    numerical_vars <- setdiff(all_vars, cat_vars)
+  }
+
+  T1_after <- tableone::CreateTableOne(
+    vars = all_vars, strata = strata, data = data,
+    factorVars = cat_vars, addOverall = TRUE, includeNA = FALSE
+  )
+
+  T1_after_print <- print(
+    T1_after, showAllLevels = TRUE, exact = exact,
+    nonnormal = numerical_vars, missing = TRUE,
+    quote = FALSE, noSpaces = TRUE, printToggle = FALSE
+  )
+
+  write.csv(T1_after_print, file = output, row.names = TRUE)
+}
+```
+
+## 1. AE Incidence by Extended Criteria {#criteria-tables}
+
+AE rates stratified by ACLF (`criteria_2`), sCr (`criteria_3`), and Hypoxemia (`criteria_4`) criteria.
+
+```{r criteria-tables}
+ae_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
+             "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8", "terli_ae_respfail",
+             "serious_ae", "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")
+
+ae_cat_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
+                 "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8", "terli_ae_respfail",
+                 "serious_ae", "comb_effusion_edema")
+
+exact_vars <- c("terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
+                "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8")
+
+for (crit in c("criteria_2", "criteria_3", "criteria_4")) {
+  create_table_one(
+    all_vars = ae_vars, cat_vars = ae_cat_vars,
+    data = final_master, exact = exact_vars,
+    strata = crit,
+    output = paste0('/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_', crit, '.csv')
+  )
+}
+```
+
+## 2. Baseline Characteristics by AE Type {#baseline-tables}
+
+```{r baseline-vars, include=FALSE}
+categorical_vars <- c(
+  "admit_admitservice", "admit_admitroute", "sex_male", "race", "hispanic",
+  "insurance_type", "cirrhosis_etiology", "etoh_hepatitis", "hegrade_admit",
+  "admit_ascites", "htn_medical_hx", "dm_medical_hx", "ckd_medical_hx",
+  "cad_medical_hx", "nsbb_preadmission", "nsbb_type_preadmission",
+  "ace_arb_preadmission", "nsaid_preadmission", "diuretics_preadmission",
+  "sbp_ppx_preadmission", "lactulose_preadmission", "rifaximin_preadmission",
+  "mido_preadmission", "ascites_previous_comp", "refascites_previous_comp",
+  "he_previous_comp", "sbp_previous_comp", "nonsbp_previous_comp",
+  "phtn_bleed_previous_comp", "hcc_previous_comp", "tips_previous_comp",
+  "baseline_scr_outpt", "aki_previous_90days", "transfer_aki",
+  "aki_precipitant_nsbpinf", "he_aki", "rrt_aki", "mv_aki", "pressors_aki",
+  "chest_imaging", "chest_imaging_pulmedema", "chest_imaging_effusion",
+  "ecg", "echo", "albumin_before_terli", "crystalloid_before_terli",
+  "nsbb_before_terli", "mido_before_terli", "oct_before_terli",
+  "ne_before_terli", "gihep_consult", "neph_consult", "pall_consult",
+  "code_status", "ua_hrs", "ua_na_hrs", "ua_cr_hrs", "ua_urea_hrs",
+  "ua_granularcasts_hrs", "ua_epi_cells_hrs", "location_terli_day0",
+  "terli_route_day0", "tele_terli_day0", "he_terli_day0",
+  "infection_terli_day0", "typeinfection_terli_day0", "hrs_responders",
+  "dosechange_terli_day1", "dosechange_terli_day2", "dosechange_terli_day3",
+  "dosechange_terli_day4", "dosechange_terli_day5", "dosechange_terli_day6",
+  "dosechange_terli_day7", "dosechange_terli_day8", "dosechange_terli_day9",
+  "dosechange_terli_day10", "dosechange_terli_day11", "dosechange_terli_day12",
+  "discont_aki_stage", "aclf_grade", "HRS_Criteria", "criteria_1",
+  "criteria_2", "criteria_3", "criteria_4", "akin", "transplant_slkt",
+  "transplant_lt", "rrt", "rrt_2", "rrt_modality", "rrt_continuous",
+  "hd_discharge", "disposition", "liver_f", "brain_f", "coagulation_f",
+  "circulatory_f", "respiratory_f", "kidney_f", "baseline_scr_120to365",
+  "aki_events_previous90days", "prbc_trans_before_terli",
+  "time_to_death_status", "terli_ae_abdpain", "terli_ae_nausea",
+  "terli_ae_diarrhea", "terli_ae_volover", "terli_ae_brady", "terli_7",
+  "terli_8", "terli_ae_respfail", "any_ae", "listed_transplant",
+  "dosechange_status", "hrs_rebound", "race_2", "HRS_reversal_new",
+  "hrs_responders_cat_2", "time_to_death_status_90days",
+  "time_to_death_status_90days_cmp", "ckd_baseline", "HRS_criteria_3"
+)
+
+numerical_vars <- c(
+  "age", "scr_admit", "tbili_admit", "inr_admit", "sodium_admit",
+  "albumin_admit", "lactate_admit", "nsbb_dose_preadmission",
+  "mido_dose_preadmission", "baseline_scr", "baseline_scr_days_to_admit",
+  "transfer_aki_days_toadmit", "days_admit_to_aki", "aki_weight",
+  "aki_height", "aki_hr", "aki_sbp", "aki_dbp", "aki_map", "aki_pao2",
+  "fio2_aki", "scr_aki", "bun_aki", "albumin_aki", "inr_aki", "wbc_aki",
+  "plt_aki", "ecg_qtc", "days_to_echo", "echo_ef", "echo_lateral_e",
+  "echo_trpeak", "echo_gls", "echo_earatio", "echo_rvsp", "echo_pasp",
+  "echo_lavi", "echo_tr", "totalalbumin_before_terli",
+  "albvolume_before_terli", "saline_vol_before_terli",
+  "lr_volume_before_terli", "other_cryst_before_terli",
+  "prbc_qaunt_before_terli", "totalvolume_before_terli",
+  "total_uo_before_terli", "days_first_mido_before_terli",
+  "days_total_mido_before_terli", "mido_maxdose_before_terli",
+  "days_first_oct_before_terli", "days_total_oct_before_terli",
+  "oct_maxdose_before_terli", "days_first_ne_before_terli",
+  "days_total_ne_before_terli", "days_to_gihep_consult",
+  "days_to_neph_consult", "days_to_pall_consult", "days_ua_hrs",
+  "days_ua_na_hrs", "ua_na_value_hrs", "days_ua_cr_hrs", "ua_cr_value_hrs",
+  "days_ua_urea_hrs", "ua_urea_value_hrs", "feurea_hrs", "ua_rbc_hrs",
+  "uaprotein_hrs", "temp_terli_day0", "hr_terli_day0", "pao2_terli_day0",
+  "fio2_terli_day0", "sbp_terli_day0_time0", "map_terli_day0_time0",
+  "chloride_terli_day0", "bicarb_terli_day0", "scr_terli_day0",
+  "bun_terli_day0", "ast_terli_day0", "alt_terli_day0", "bili_terli_day0",
+  "alb_terli_day0", "inr_terli_day0", "wbc_terli_day0", "hgb_terli_day0",
+  "Discont_Day", "na_terli_day0", "days_to_terli_initiation_day0",
+  "clif_c_score", "admit_meld", "admit_meld_na", "admit_meld_3",
+  "admit_meld_3_raw", "day0_meld", "day0_meld_na", "day0_meld_3",
+  "time_to_transplant", "time_to_death_status", "time_to_death_90days",
+  "cystatinc_admit", "cystatinc_aki", "cystatinc_terli_day0",
+  "urine_pc", "fena", "fena_hrs", "total_albumin"
+)
+
+categorical_vars <- intersect(categorical_vars, names(final_master))
+numerical_vars <- intersect(numerical_vars, names(final_master))
+all_vars <- c(numerical_vars, categorical_vars)
+
+final_master <- final_master %>% mutate_at(categorical_vars, as.factor)
+```
+
+### Any AE
+```{r table1-any-ae}
+create_table_one(
+  all_vars = all_vars, cat_vars = categorical_vars,
+  data = final_master, strata = "any_ae",
+  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_any_ae.csv'
+)
+```
+
+### Abdominal AE
+```{r table1-abdominal-ae}
+create_table_one(
+  all_vars = all_vars, cat_vars = categorical_vars,
+  data = final_master, strata = "abdominal_ae",
+  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_abdominal_ae.csv'
+)
+```
+
+### Serious AE
+```{r table1-serious-ae}
+create_table_one(
+  all_vars = all_vars, cat_vars = categorical_vars,
+  data = final_master, strata = "serious_ae",
+  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_serious_ae.csv'
+)
+```
+
+### Respiratory Failure
+```{r table1-respfail}
+create_table_one(
+  all_vars = all_vars, cat_vars = categorical_vars,
+  data = final_master, strata = "terli_ae_respfail",
+  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_terli_ae_respfail.csv'
+)
+```
+
+## 2b. AE Cross-Tabulations (04/07/2026 Update) {#ae-cross-tables}
+
+### SAE (Serious AE as column)
+```{r table-sae}
+sae_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
+              "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
+              "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")
+
+sae_cat_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
+                  "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
+                  "terli_ae_respfail", "comb_effusion_edema")
+
+create_table_one(
+  all_vars = sae_vars, cat_vars = sae_cat_vars,
+  data = final_master, strata = "serious_ae",
+  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_serious_ae_cross.csv'
+)
+```
+
+### Respiratory Failure (with new variables)
+```{r table-respfail-updated}
+respfail_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
+                   "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
+                   "serious_ae", "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")
+
+respfail_cat_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
+                       "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
+                       "serious_ae", "comb_effusion_edema")
+
+create_table_one(
+  all_vars = respfail_vars, cat_vars = respfail_cat_vars,
+  data = final_master, strata = "terli_ae_respfail",
+  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_terli_ae_respfail_updated.csv'
+)
+```
+
+## 3. ACLF Grade by AE Status {#aclf-table}
+
+```{r aclf-by-ae}
+table1(~aclf_grade | any_ae, final_master)
+```
+
+## 4. Logistic Regression — Predictors of Any AE {#logistic}
+
+### Univariable
+```{r logistic-uv}
+final_master <- final_master %>% mutate_at(c("aclf_grade", "respiratory_f"), as.factor)
+
+final_master %>%
+  select(any_ae, scr_terli_day0, respiratory_f, aclf_grade) %>%
+  tbl_uvregression(
+    method = glm,
+    method.args = list(family = binomial),
+    y = any_ae,
+    pvalue_fun = ~style_pvalue(.x, digits = 3),
+    exponentiate = TRUE
+  ) %>%
+  modify_caption("**Univariable logistic regression for any adverse event**") %>%
+  bold_p(0.05) %>%
+  bold_labels() %>%
+  add_n()
+```
+
+### Multivariable (04/07/2026 Update): sex_male + inr_admit + akin + chest_imaging_effusion
+```{r logistic-mv-updated}
+final_master <- final_master %>% mutate_at(c("akin"), as.factor)
+
+glm(any_ae ~ sex_male + inr_admit + akin + chest_imaging_effusion,
+    family = binomial, data = final_master) %>%
+  tbl_regression(exponentiate = TRUE) %>%
+  add_n() %>%
+  bold_p(0.05) %>%
+  bold_labels() %>%
+  modify_caption("**Multivariable logistic regression for any adverse event (updated)**")
+```
+
+## 5. Competing Risk Models — 90-Day Mortality {#cmprisk}
+
+### Univariable (Fine-Gray, failcode=1: death)
+```{r cmprisk-uv}
+final_master %>%
+  select(any_ae, terli_ae_abdpain, terli_ae_nausea, terli_ae_diarrhea,
+         terli_ae_volover, terli_ae_brady, terli_7, terli_8,
+         terli_ae_respfail, serious_ae,
+         time_to_death_90days_cmp, time_to_death_status_90days_cmp) %>%
+  tbl_uvregression(
+    method = tidycmprsk::crr,
+    method.args = list(failcode = 1, cencode = 0),
+    y = Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp),
+    pvalue_fun = ~style_pvalue(.x, digits = 3),
+    exponentiate = TRUE
+  )
+```
+
+### Model 1: any_ae + age + race + hispanic + admit_meld_3 (updated 04/07/2026)
+```{r cmprisk-mv1}
+tidycmprsk::crr(
+  Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp) ~
+    any_ae + age + race + hispanic + admit_meld_3,
+  failcode = 1, cencode = 0, data = final_master
+) %>%
+  tbl_regression(exp = TRUE) %>%
+  add_n() %>%
+  bold_p(0.05) %>%
+  bold_labels()
+```
+
+### Model 2: any_ae + age + race + hispanic
+```{r cmprisk-mv2}
+tidycmprsk::crr(
+  Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp) ~
+    any_ae + age + race + hispanic,
+  failcode = 1, cencode = 0, data = final_master
+) %>%
+  tbl_regression(exp = TRUE) %>%
+  add_n() %>%
+  bold_p(0.05) %>%
+  bold_labels()
+```
+
+### Model 3: serious_ae + age + race + hispanic + admit_meld_3
+```{r cmprisk-mv3}
+tidycmprsk::crr(
+  Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp) ~
+    serious_ae + age + race + hispanic + admit_meld_3,
+  failcode = 1, cencode = 0, data = final_master
+) %>%
+  tbl_regression(exp = TRUE) %>%
+  add_n() %>%
+  bold_p(0.05) %>%
+  bold_labels()
+```
+
+### Model 4: serious_ae + age + race + hispanic
+```{r cmprisk-mv4}
+tidycmprsk::crr(
+  Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp) ~
+    serious_ae + age + race + hispanic,
+  failcode = 1, cencode = 0, data = final_master
+) %>%
+  tbl_regression(exp = TRUE) %>%
+  add_n() %>%
+  bold_p(0.05) %>%
+  bold_labels()
+```
+
+## 6. Subgroup: ICU Admission {#icu}
+
+Cohort: patients with `location_terli_day0 == 1` or `2` (floor or step-down at terlipressin initiation).
+
+```{r icu-subgroup}
+final_master_location <- final_master %>%
+  filter(location_terli_day0 == 1 | location_terli_day0 == 2)
+
+final_master_location %>%
+  select(icu_admit, any_ae) %>%
+  tbl_uvregression(
+    method = glm,
+    method.args = list(family = binomial),
+    y = icu_admit,
+    pvalue_fun = ~style_pvalue(.x, digits = 3),
+    exponentiate = TRUE
+  ) %>%
+  bold_p(0.05) %>%
+  bold_labels() %>%
+  add_n()
+```
+
+## 7. Subgroup: Transplant-Listed Patients {#transplant}
+
+Cohort: `listed_transplant == 1`. Competing risk model with failcode=2 (transplant event).
+
+```{r transplant-subgroup}
+final_master_listed <- final_master %>% filter(listed_transplant == 1)
+
+final_master_listed %>%
+  select(any_ae, serious_ae, hrs_responders_cat_2, day0_meld, aclf_grade,
+         meld_fda, time_to_death_90days_cmp, time_to_death_status_90days_cmp) %>%
+  tbl_uvregression(
+    method = tidycmprsk::crr,
+    method.args = list(failcode = 2, cencode = 0),
+    y = Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp),
+    pvalue_fun = ~style_pvalue(.x, digits = 3),
+    exponentiate = TRUE
+  )
+```

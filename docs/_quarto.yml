@@ -1,0 +1,23 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Terlipressin — Adverse Event Analysis"
+  navbar:
+    background: "#2c8dbb"
+    foreground: white
+    left:
+      - href: index.qmd
+        text: Summary
+      - href: results.qmd
+        text: Results
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    code-fold: true
+    self-contained: false

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(quarto --version)",
+      "Bash(quarto render:*)",
+      "Bash(open:*)",
+      "Bash(cp -r docs/_site/* docs/)",
+      "Bash(touch docs/.nojekyll)",
+      "Bash(cp -r docs/_site/*_files docs/)",
+      "Bash(ls docs/*_files/figure-html/)"
+    ]
+  }
+}

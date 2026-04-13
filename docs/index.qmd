@@ -1,0 +1,136 @@
+---
+title: "Adverse Event Analysis — Summary"
+author: "Tianqi Ouyang"
+date: last-modified
+---
+
+## Overview
+
+This sub-project of the **HARMONY Terlipressin Registry** analyzes adverse events (AE) associated with terlipressin treatment in patients with hepatorenal syndrome-acute kidney injury (HRS-AKI) across 15 hospitals.
+
+## Data Pipeline
+
+```{mermaid}
+flowchart TD
+    A[Parent Project: final_master_01282026.xlsx] --> B[Load & type-convert columns]
+    B --> C[Derive AE variables]
+    C --> D[Descriptive Tables]
+    C --> E[Regression Models]
+    C --> F[Subgroup Analyses]
+    D --> G[CSV outputs in results/]
+    E --> G
+    F --> G
+```
+
+## Adverse Event Definitions
+
+| Variable | Definition | Type |
+|---|---|---|
+| `any_ae` | Any adverse event | Binary |
+| `abdominal_ae` | abdpain OR diarrhea OR nausea | Composite |
+| `serious_ae` | respfail OR brady OR terli_7 OR terli_8 | Composite |
+| `terli_ae_abdpain` | Abdominal pain | Individual |
+| `terli_ae_nausea` | Nausea | Individual |
+| `terli_ae_diarrhea` | Diarrhea | Individual |
+| `terli_ae_volover` | Volume overload | Individual |
+| `terli_ae_brady` | Bradycardia | Individual |
+| `terli_ae_respfail` | Respiratory failure | Individual |
+| `terli_7` | Ischemic event 1 | Individual |
+| `terli_8` | Ischemic event 2 | Individual |
+
+## Other Key Derived Variables
+
+| Variable | Formula |
+|---|---|
+| `BMI` | `aki_weight / (aki_height/100)^2` |
+| `meld_fda` | 1 if `coalesce(day0_meld, admit_meld, admit_meld_3) > 35` |
+| `rrt_90days` | 1 if `days_to_rrt <= 90` |
+| `lt_90days` | 1 if `time_to_transplant <= 90` |
+
+## Analysis Summary
+
+### 1. AE Incidence by Extended Criteria (Tables)
+
+Stratified AE rates comparing standard vs. extended terlipressin criteria:
+
+| Table | Stratification Variable |
+|---|---|
+| `table1_criteria_2.csv` | ACLF criteria (`criteria_2`) |
+| `table1_criteria_3.csv` | sCr criteria (`criteria_3`) |
+| `table1_criteria_4.csv` | Hypoxemia criteria (`criteria_4`) |
+
+### 2. Baseline Characteristics by AE Type (Tables)
+
+Full baseline characteristics stratified by AE occurrence:
+
+| Table | Column Variable |
+|---|---|
+| `table1_any_ae.csv` | Any AE (`any_ae`) |
+| `table1_abdominal_ae.csv` | Abdominal AE (`abdominal_ae`) |
+| `table1_serious_ae.csv` | Serious AE (`serious_ae`) |
+| `table1_terli_ae_respfail.csv` | Respiratory failure (`terli_ae_respfail`) |
+
+### 2b. AE Cross-Tabulations (04/07/2026 Update)
+
+New variables added to stratified tables:
+
+| Variable | Definition |
+|---|---|
+| `comb_effusion_edema` | 4-level: 0=neither, 1=effusion only, 2=edema only, 3=both |
+| `ratio_albumin_b4terli` | `totalalbumin_before_terli / aki_weight` |
+| `ratio_albumin_total` | `total_albumin / aki_weight` |
+
+New tables: `serious_ae` and `terli_ae_respfail` as column variables with AE cross-tabs.
+
+::: {.callout-note}
+Coding fix applied: For patients with `chest_imaging=1`, missing `chest_imaging_effusion` and `chest_imaging_pulmedema` are set to 0.
+:::
+
+### 3. Logistic Regression — Predictors of AE
+
+- **Univariable**: `scr_terli_day0`, `respiratory_f`, `aclf_grade` → outcome `any_ae`
+- **Multivariable (original)**: `aclf_grade + scr_terli_day0 + respiratory_f` → outcome `any_ae`
+- **Multivariable (04/07/2026 update)**: `sex_male + inr_admit + akin + chest_imaging_effusion` → outcome `any_ae`
+
+### 4. Competing Risk Models — 90-Day Mortality
+
+**Univariable** (Fine-Gray, failcode=1 death):
+All individual AE types + `serious_ae`
+
+**Multivariable** (4 models):
+
+| Model | Covariates |
+|---|---|
+| 1 | `any_ae + age + race + hispanic + admit_meld_3` *(updated 04/07/2026, was day0_meld)* |
+| 2 | `any_ae + age + race + hispanic` |
+| 3 | `serious_ae + age + race + hispanic + admit_meld_3` |
+| 4 | `serious_ae + age + race + hispanic` |
+
+### 5. Subgroup: ICU Admission
+
+- **Cohort**: `location_terli_day0 == 1 OR 2`
+- **Model**: Univariable logistic — `any_ae` → `icu_admit`
+
+### 6. Subgroup: Transplant-Listed Patients
+
+- **Cohort**: `listed_transplant == 1`
+- **Model**: Univariable competing risk (failcode=2, transplant)
+- **Covariates**: `any_ae`, `serious_ae`, `hrs_responders_cat_2`, `day0_meld`, `aclf_grade`, `meld_fda`
+
+## Code Files
+
+| File | Description |
+|---|---|
+| `Adverse-event.Rmd` | Original analysis (01/2025 request) |
+| `Adverse event 2026.Rmd` | Updated analysis (01/2026 request, adds `aclf_grade` recoding) |
+| `code/Adverse-event.Rmd` | Copy in organized directory |
+
+## Data Request History
+
+| Date | File | Key Changes |
+|---|---|---|
+| 11/26/2025 | `requests/...11262025.docx` | Initial request: criteria tables, univariable AE predictors, 90-day survival |
+| 01/12/2025 | `requests/...01122025.docx` | Added multivariable models, ICU subgroup, transplant subgroup |
+| 01/18/2026 | `requests/...01182026.docx` | Reformatted as column/row specifications |
+| 01/29/2026 | `requests/...01292026.docx` | Added `serious_ae` table, `terli_ae_respfail` table, Fine-Gray specification |
+| **04/07/2026** | `requests/...04072026.docx` | New variables (`comb_effusion_edema`, albumin ratios), updated multivariate models, SAE cross-tabs — **IMPLEMENTED** |

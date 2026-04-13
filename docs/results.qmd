@@ -41,7 +41,6 @@ library(musclerefdata)
 library(transplantr)
 library(sqldf)
 library(table1)
-library(kableExtra)
 ```
 
 ```{r data-load, include=FALSE}
@@ -99,37 +98,59 @@ final_master$time_to_death_status_90days_cmp <- as.factor(final_master$time_to_d
 ```
 
 ```{r table-one-function, include=FALSE}
+# P-value function for table1 package
+pvalue <- function(x, ...) {
+  y <- unlist(x)
+  g <- factor(rep(1:length(x), times = sapply(x, length)))
+  if (is.numeric(y)) {
+    p <- kruskal.test(y ~ g)$p.value
+  } else {
+    p <- tryCatch(
+      fisher.test(table(y, g), simulate.p.value = TRUE)$p.value,
+      error = function(e) chisq.test(table(y, g))$p.value
+    )
+  }
+  c("", sub("<", "&lt;", format.pval(p, digits = 3, eps = 0.001)))
+}
+
 create_table_one <- function(all_vars, data, strata, output,
                              cat_vars = NULL, exact = NULL) {
-  if (is.null(cat_vars)) {
-    numerical_vars <- all_vars
-  } else {
-    numerical_vars <- setdiff(all_vars, cat_vars)
+  # Ensure strata is a factor
+  data[[strata]] <- factor(data[[strata]])
+
+  # Convert cat_vars to factor
+  if (!is.null(cat_vars)) {
+    for (v in intersect(cat_vars, names(data))) {
+      data[[v]] <- factor(data[[v]])
+    }
   }
 
-  T1_after <- tableone::CreateTableOne(
+  # Keep only vars that exist in data
+  all_vars <- intersect(all_vars, names(data))
+
+  # Build formula: ~ var1 + var2 + ... | strata
+  f <- as.formula(paste("~", paste(all_vars, collapse = " + "), "|", strata))
+
+  # Render table1 with p-values
+  tbl <- table1(f, data = data, overall = "Overall",
+                extra.col = list("P-value" = pvalue))
+
+  # Also save CSV via tableone for backwards compatibility
+  if (!is.null(cat_vars)) {
+    numerical_vars <- setdiff(all_vars, cat_vars)
+  } else {
+    numerical_vars <- all_vars
+  }
+  T1 <- tableone::CreateTableOne(
     vars = all_vars, strata = strata, data = data,
     factorVars = cat_vars, addOverall = TRUE, includeNA = FALSE
   )
+  T1_print <- print(T1, showAllLevels = TRUE, exact = exact,
+                    nonnormal = numerical_vars, missing = TRUE,
+                    quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
+  write.csv(T1_print, file = output, row.names = TRUE)
 
-  T1_after_print <- print(
-    T1_after, showAllLevels = TRUE, exact = exact,
-    nonnormal = numerical_vars, missing = TRUE,
-    quote = FALSE, noSpaces = TRUE, printToggle = FALSE
-  )
-
-  write.csv(T1_after_print, file = output, row.names = TRUE)
-
-  # Build HTML table
-  df <- as.data.frame(T1_after_print)
-  df <- cbind(Variable = rownames(df), df)
-  rownames(df) <- NULL
-  html <- kable(df, format = "html", escape = FALSE) %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-                  full_width = TRUE, font_size = 12) %>%
-    scroll_box(width = "100%", height = "600px")
-
-  cat(as.character(html))
+  tbl
 }
 ```
 
@@ -151,7 +172,7 @@ exact_vars <- c("terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
 ```
 
 ### ACLF (criteria_2)
-```{r criteria-2, results='asis'}
+```{r criteria-2}
 create_table_one(
   all_vars = ae_vars, cat_vars = ae_cat_vars,
   data = final_master, exact = exact_vars,
@@ -161,7 +182,7 @@ create_table_one(
 ```
 
 ### sCr (criteria_3)
-```{r criteria-3, results='asis'}
+```{r criteria-3}
 create_table_one(
   all_vars = ae_vars, cat_vars = ae_cat_vars,
   data = final_master, exact = exact_vars,
@@ -171,7 +192,7 @@ create_table_one(
 ```
 
 ### Hypoxemia (criteria_4)
-```{r criteria-4, results='asis'}
+```{r criteria-4}
 create_table_one(
   all_vars = ae_vars, cat_vars = ae_cat_vars,
   data = final_master, exact = exact_vars,
@@ -263,7 +284,7 @@ final_master <- final_master %>% mutate_at(categorical_vars, as.factor)
 ```
 
 ### Any AE
-```{r table1-any-ae, results='asis'}
+```{r table1-any-ae}
 create_table_one(
   all_vars = all_vars, cat_vars = categorical_vars,
   data = final_master, strata = "any_ae",
@@ -272,7 +293,7 @@ create_table_one(
 ```
 
 ### Abdominal AE
-```{r table1-abdominal-ae, results='asis'}
+```{r table1-abdominal-ae}
 create_table_one(
   all_vars = all_vars, cat_vars = categorical_vars,
   data = final_master, strata = "abdominal_ae",
@@ -281,7 +302,7 @@ create_table_one(
 ```
 
 ### Serious AE
-```{r table1-serious-ae, results='asis'}
+```{r table1-serious-ae}
 create_table_one(
   all_vars = all_vars, cat_vars = categorical_vars,
   data = final_master, strata = "serious_ae",
@@ -290,7 +311,7 @@ create_table_one(
 ```
 
 ### Respiratory Failure
-```{r table1-respfail, results='asis'}
+```{r table1-respfail}
 create_table_one(
   all_vars = all_vars, cat_vars = categorical_vars,
   data = final_master, strata = "terli_ae_respfail",
@@ -301,7 +322,7 @@ create_table_one(
 ## 2b. AE Cross-Tabulations (04/07/2026 Update) {#ae-cross-tables}
 
 ### SAE (Serious AE as column)
-```{r table-sae, results='asis'}
+```{r table-sae}
 sae_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
               "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
               "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")
@@ -318,7 +339,7 @@ create_table_one(
 ```
 
 ### Respiratory Failure (with new variables)
-```{r table-respfail-updated, results='asis'}
+```{r table-respfail-updated}
 respfail_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
                    "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
                    "serious_ae", "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")

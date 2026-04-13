@@ -20,4 +20,6 @@ format:
     toc-depth: 3
     toc-location: right
     code-fold: true
+    code-tools: false
+    echo: false
     self-contained: false

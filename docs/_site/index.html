@@ -124,15 +124,16 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#data-pipeline" id="toc-data-pipeline" class="nav-link" data-scroll-target="#data-pipeline">Data Pipeline</a></li>
   <li><a href="#adverse-event-definitions" id="toc-adverse-event-definitions" class="nav-link" data-scroll-target="#adverse-event-definitions">Adverse Event Definitions</a></li>
   <li><a href="#other-key-derived-variables" id="toc-other-key-derived-variables" class="nav-link" data-scroll-target="#other-key-derived-variables">Other Key Derived Variables</a></li>
-  <li><a href="#analysis-summary" id="toc-analysis-summary" class="nav-link" data-scroll-target="#analysis-summary">Analysis Summary</a>
+  <li><a href="#request-1-11262025" id="toc-request-1-11262025" class="nav-link" data-scroll-target="#request-1-11262025">Request 1: 11/26/2025</a></li>
+  <li><a href="#request-2-01122025" id="toc-request-2-01122025" class="nav-link" data-scroll-target="#request-2-01122025">Request 2: 01/12/2025</a></li>
+  <li><a href="#request-3-01182026" id="toc-request-3-01182026" class="nav-link" data-scroll-target="#request-3-01182026">Request 3: 01/18/2026</a></li>
+  <li><a href="#request-4-01292026" id="toc-request-4-01292026" class="nav-link" data-scroll-target="#request-4-01292026">Request 4: 01/29/2026</a></li>
+  <li><a href="#request-5-04072026" id="toc-request-5-04072026" class="nav-link" data-scroll-target="#request-5-04072026">Request 5: 04/07/2026</a>
   <ul class="collapse">
-  <li><a href="#ae-incidence-by-extended-criteria-tables" id="toc-ae-incidence-by-extended-criteria-tables" class="nav-link" data-scroll-target="#ae-incidence-by-extended-criteria-tables">1. AE Incidence by Extended Criteria (Tables)</a></li>
-  <li><a href="#baseline-characteristics-by-ae-type-tables" id="toc-baseline-characteristics-by-ae-type-tables" class="nav-link" data-scroll-target="#baseline-characteristics-by-ae-type-tables">2. Baseline Characteristics by AE Type (Tables)</a></li>
-  <li><a href="#b.-ae-cross-tabulations-04072026-update" id="toc-b.-ae-cross-tabulations-04072026-update" class="nav-link" data-scroll-target="#b.-ae-cross-tabulations-04072026-update">2b. AE Cross-Tabulations (04/07/2026 Update)</a></li>
-  <li><a href="#logistic-regression-predictors-of-ae" id="toc-logistic-regression-predictors-of-ae" class="nav-link" data-scroll-target="#logistic-regression-predictors-of-ae">3. Logistic Regression — Predictors of AE</a></li>
-  <li><a href="#competing-risk-models-90-day-mortality" id="toc-competing-risk-models-90-day-mortality" class="nav-link" data-scroll-target="#competing-risk-models-90-day-mortality">4. Competing Risk Models — 90-Day Mortality</a></li>
-  <li><a href="#subgroup-icu-admission" id="toc-subgroup-icu-admission" class="nav-link" data-scroll-target="#subgroup-icu-admission">5. Subgroup: ICU Admission</a></li>
-  <li><a href="#subgroup-transplant-listed-patients" id="toc-subgroup-transplant-listed-patients" class="nav-link" data-scroll-target="#subgroup-transplant-listed-patients">6. Subgroup: Transplant-Listed Patients</a></li>
+  <li><a href="#new-variables" id="toc-new-variables" class="nav-link" data-scroll-target="#new-variables">New Variables</a></li>
+  <li><a href="#coding-fix" id="toc-coding-fix" class="nav-link" data-scroll-target="#coding-fix">Coding Fix</a></li>
+  <li><a href="#updated-tables" id="toc-updated-tables" class="nav-link" data-scroll-target="#updated-tables">Updated Tables</a></li>
+  <li><a href="#updated-models" id="toc-updated-models" class="nav-link" data-scroll-target="#updated-models">Updated Models</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -271,198 +272,367 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="other-key-derived-variables">Other Key Derived Variables</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Variable</th>
 <th>Formula</th>
+<th>Type</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td><code>BMI</code></td>
 <td><code>aki_weight / (aki_height/100)^2</code></td>
+<td>Numerical</td>
 </tr>
 <tr class="even">
 <td><code>meld_fda</code></td>
 <td>1 if <code>coalesce(day0_meld, admit_meld, admit_meld_3) &gt; 35</code></td>
+<td>Categorical</td>
 </tr>
 <tr class="odd">
 <td><code>rrt_90days</code></td>
 <td>1 if <code>days_to_rrt &lt;= 90</code></td>
+<td>Categorical</td>
 </tr>
 <tr class="even">
 <td><code>lt_90days</code></td>
 <td>1 if <code>time_to_transplant &lt;= 90</code></td>
+<td>Categorical</td>
 </tr>
 </tbody>
 </table>
+<hr>
 </section>
-<section id="analysis-summary" class="level2">
-<h2 class="anchored" data-anchor-id="analysis-summary">Analysis Summary</h2>
-<section id="ae-incidence-by-extended-criteria-tables" class="level3">
-<h3 class="anchored" data-anchor-id="ae-incidence-by-extended-criteria-tables">1. AE Incidence by Extended Criteria (Tables)</h3>
-<p>Stratified AE rates comparing standard vs.&nbsp;extended terlipressin criteria:</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Table</th>
-<th>Stratification Variable</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>table1_criteria_2.csv</code></td>
-<td>ACLF criteria (<code>criteria_2</code>)</td>
-</tr>
-<tr class="even">
-<td><code>table1_criteria_3.csv</code></td>
-<td>sCr criteria (<code>criteria_3</code>)</td>
-</tr>
-<tr class="odd">
-<td><code>table1_criteria_4.csv</code></td>
-<td>Hypoxemia criteria (<code>criteria_4</code>)</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="baseline-characteristics-by-ae-type-tables" class="level3">
-<h3 class="anchored" data-anchor-id="baseline-characteristics-by-ae-type-tables">2. Baseline Characteristics by AE Type (Tables)</h3>
-<p>Full baseline characteristics stratified by AE occurrence:</p>
+<section id="request-1-11262025" class="level2">
+<h2 class="anchored" data-anchor-id="request-1-11262025">Request 1: 11/26/2025</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
+<col style="width: 60%">
+<col style="width: 40%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Table</th>
-<th>Column Variable</th>
+<th>Request</th>
+<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>table1_any_ae.csv</code></td>
-<td>Any AE (<code>any_ae</code>)</td>
+<td>AE incidence table stratified by <code>criteria_2</code> (ACLF)</td>
+<td>✅</td>
 </tr>
 <tr class="even">
-<td><code>table1_abdominal_ae.csv</code></td>
-<td>Abdominal AE (<code>abdominal_ae</code>)</td>
+<td>AE incidence table stratified by <code>criteria_3</code> (sCr)</td>
+<td>✅</td>
 </tr>
 <tr class="odd">
-<td><code>table1_serious_ae.csv</code></td>
-<td>Serious AE (<code>serious_ae</code>)</td>
+<td>AE incidence table stratified by <code>criteria_4</code> (Hypoxemia)</td>
+<td>✅</td>
 </tr>
 <tr class="even">
-<td><code>table1_terli_ae_respfail.csv</code></td>
-<td>Respiratory failure (<code>terli_ae_respfail</code>)</td>
+<td>Univariable AE predictors using all Table 1 covariates, outcome: <code>any_ae</code></td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Univariable AE predictors, outcome: <code>abdominal_ae</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Univariable AE predictors, outcome: <code>serious_ae</code> (respfail, brady, terli_7, terli_8)</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Univariable AE predictors, outcome: <code>terli_ae_respfail</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Multivariable logistic: <code>aclf_grade + scr_terli_day0 + respiratory_f</code> → <code>any_ae</code></td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Univariable competing risk (Fine-Gray, death) for all AE types</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Multivariable competing risk: <code>any_ae + age + race + hispanic + MELD</code></td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Multivariable competing risk: <code>any_ae + age + race + hispanic + aclf_grade</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Multivariable competing risk: <code>serious_ae + age + race + hispanic + MELD</code></td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Multivariable competing risk: <code>serious_ae + age + race + hispanic + aclf_grade</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>ICU subgroup: univariable logistic <code>any_ae</code> → <code>icu_admit</code> (cohort: <code>location_terli_day0 == 1 or 2</code>)</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Transplant subgroup: univariable competing risk (failcode=2, <code>listed_transplant == 1</code>)</td>
+<td>✅</td>
 </tr>
 </tbody>
 </table>
+<hr>
 </section>
-<section id="b.-ae-cross-tabulations-04072026-update" class="level3">
-<h3 class="anchored" data-anchor-id="b.-ae-cross-tabulations-04072026-update">2b. AE Cross-Tabulations (04/07/2026 Update)</h3>
-<p>New variables added to stratified tables:</p>
+<section id="request-2-01122025" class="level2">
+<h2 class="anchored" data-anchor-id="request-2-01122025">Request 2: 01/12/2025</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
+<col style="width: 60%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Request</th>
+<th>Done</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Create <code>abdominal_ae</code> = 1 if <code>terli_ae_abdpain=1</code> OR <code>terli_ae_diarrhea=1</code> OR <code>terli_ae_nausea=1</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Create <code>serious_ae</code> = 1 if <code>terli_ae_volover=1</code> OR <code>terli_ae_respfail=1</code> OR <code>terli_8=1</code> OR <code>terli_7=1</code></td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Create <code>meld_fda</code> = 1 if <code>day0_meld &gt; 35</code>, if missing use <code>admit_meld</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Baseline characteristics table stratified by <code>any_ae</code></td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Baseline characteristics table stratified by <code>abdominal_ae</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Baseline characteristics table stratified by <code>serious_ae</code></td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Baseline characteristics table stratified by <code>terli_ae_respfail</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>4 multivariable competing risk models (any_ae/serious_ae x MELD/aclf_grade)</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>ICU subgroup analysis</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Transplant-listed subgroup: competing risk with <code>any_ae, serious_ae, hrs_responders_cat_2, day0_meld, meld_fda, aclf_grade</code></td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="request-3-01182026" class="level2">
+<h2 class="anchored" data-anchor-id="request-3-01182026">Request 3: 01/18/2026</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Request</th>
+<th>Done</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Reformatted all analyses as column/row specifications</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Same analyses as Request 2, reformatted</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="request-4-01292026" class="level2">
+<h2 class="anchored" data-anchor-id="request-4-01292026">Request 4: 01/29/2026</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 60%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Request</th>
+<th>Done</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>New table: <code>serious_ae</code> as column variable with baseline characteristics</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>New table: <code>terli_ae_respfail</code> as column variable with baseline characteristics</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>Specify Fine-Gray for competing risk models</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Update competing risk Model 3: use <code>admit_meld_3</code> instead of <code>day0_meld</code></td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="request-5-04072026" class="level2">
+<h2 class="anchored" data-anchor-id="request-5-04072026">Request 5: 04/07/2026</h2>
+<section id="new-variables" class="level3">
+<h3 class="anchored" data-anchor-id="new-variables">New Variables</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Variable</th>
 <th>Definition</th>
+<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>comb_effusion_edema</code></td>
-<td>4-level: 0=neither, 1=effusion only, 2=edema only, 3=both</td>
+<td><code>comb_effusion_edema = 0</code></td>
+<td><code>chest_imaging_effusion=0</code> AND <code>chest_imaging_pulmedema=0</code></td>
+<td>✅</td>
 </tr>
 <tr class="even">
-<td><code>ratio_albumin_b4terli</code></td>
-<td><code>totalalbumin_before_terli / aki_weight</code></td>
+<td><code>comb_effusion_edema = 1</code></td>
+<td><code>chest_imaging_effusion=1</code> AND <code>chest_imaging_pulmedema=0</code></td>
+<td>✅</td>
 </tr>
 <tr class="odd">
+<td><code>comb_effusion_edema = 2</code></td>
+<td><code>chest_imaging_effusion=0</code> AND <code>chest_imaging_pulmedema=1</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td><code>comb_effusion_edema = 3</code></td>
+<td><code>chest_imaging_effusion=1</code> AND <code>chest_imaging_pulmedema=1</code></td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td><code>ratio_albumin_b4terli</code></td>
+<td><code>totalalbumin_before_terli / aki_weight</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
 <td><code>ratio_albumin_total</code></td>
 <td><code>total_albumin / aki_weight</code></td>
+<td>✅</td>
 </tr>
 </tbody>
 </table>
-<p>New tables: <code>serious_ae</code> and <code>terli_ae_respfail</code> as column variables with AE cross-tabs.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Coding fix applied: For patients with <code>chest_imaging=1</code>, missing <code>chest_imaging_effusion</code> and <code>chest_imaging_pulmedema</code> are set to 0.</p>
-</div>
-</div>
 </section>
-<section id="logistic-regression-predictors-of-ae" class="level3">
-<h3 class="anchored" data-anchor-id="logistic-regression-predictors-of-ae">3. Logistic Regression — Predictors of AE</h3>
-<ul>
-<li><strong>Univariable</strong>: <code>scr_terli_day0</code>, <code>respiratory_f</code>, <code>aclf_grade</code> → outcome <code>any_ae</code></li>
-<li><strong>Multivariable (original)</strong>: <code>aclf_grade + scr_terli_day0 + respiratory_f</code> → outcome <code>any_ae</code></li>
-<li><strong>Multivariable (04/07/2026 update)</strong>: <code>sex_male + inr_admit + akin + chest_imaging_effusion</code> → outcome <code>any_ae</code></li>
-</ul>
-</section>
-<section id="competing-risk-models-90-day-mortality" class="level3">
-<h3 class="anchored" data-anchor-id="competing-risk-models-90-day-mortality">4. Competing Risk Models — 90-Day Mortality</h3>
-<p><strong>Univariable</strong> (Fine-Gray, failcode=1 death): All individual AE types + <code>serious_ae</code></p>
-<p><strong>Multivariable</strong> (4 models):</p>
+<section id="coding-fix" class="level3">
+<h3 class="anchored" data-anchor-id="coding-fix">Coding Fix</h3>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
+<col style="width: 60%">
+<col style="width: 40%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Model</th>
-<th>Covariates</th>
+<th>Request</th>
+<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>1</td>
-<td><code>any_ae + age + race + hispanic + admit_meld_3</code> <em>(updated 04/07/2026, was day0_meld)</em></td>
+<td>For <code>chest_imaging=1</code> AND missing <code>chest_imaging_effusion</code>, set to 0</td>
+<td>✅</td>
 </tr>
 <tr class="even">
-<td>2</td>
-<td><code>any_ae + age + race + hispanic</code></td>
-</tr>
-<tr class="odd">
-<td>3</td>
-<td><code>serious_ae + age + race + hispanic + admit_meld_3</code></td>
-</tr>
-<tr class="even">
-<td>4</td>
-<td><code>serious_ae + age + race + hispanic</code></td>
+<td>For <code>chest_imaging=1</code> AND missing <code>chest_imaging_pulmedema</code>, set to 0</td>
+<td>✅</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="subgroup-icu-admission" class="level3">
-<h3 class="anchored" data-anchor-id="subgroup-icu-admission">5. Subgroup: ICU Admission</h3>
-<ul>
-<li><strong>Cohort</strong>: <code>location_terli_day0 == 1 OR 2</code></li>
-<li><strong>Model</strong>: Univariable logistic — <code>any_ae</code> → <code>icu_admit</code></li>
-</ul>
+<section id="updated-tables" class="level3">
+<h3 class="anchored" data-anchor-id="updated-tables">Updated Tables</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 60%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Request</th>
+<th>Done</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Criteria tables (2/3/4): add <code>serious_AE, comb_effusion_edema, ratio_albumin_b4terli, ratio_albumin_total</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Categorical: AE vars + <code>serious_AE, comb_effusion_edema</code>; Numerical: both ratios</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>New SAE table: column <code>serious_AE</code>, rows: AE vars + <code>comb_effusion_edema</code>, both ratios</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Updated respiratory failure table: add <code>serious_AE, comb_effusion_edema</code>, both ratios</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="subgroup-transplant-listed-patients" class="level3">
-<h3 class="anchored" data-anchor-id="subgroup-transplant-listed-patients">6. Subgroup: Transplant-Listed Patients</h3>
-<ul>
-<li><strong>Cohort</strong>: <code>listed_transplant == 1</code></li>
-<li><strong>Model</strong>: Univariable competing risk (failcode=2, transplant)</li>
-<li><strong>Covariates</strong>: <code>any_ae</code>, <code>serious_ae</code>, <code>hrs_responders_cat_2</code>, <code>day0_meld</code>, <code>aclf_grade</code>, <code>meld_fda</code></li>
-</ul>
+<section id="updated-models" class="level3">
+<h3 class="anchored" data-anchor-id="updated-models">Updated Models</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 60%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Request</th>
+<th>Done</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Multivariable logistic: <code>sex_male + inr_admit + akin + chest_imaging_effusion</code> → <code>any_ae</code></td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Competing risk Model 1: <code>any_ae + age + race + hispanic + admit_meld_3</code> (was <code>day0_meld</code>)</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
 
 
 </section>

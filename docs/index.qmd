@@ -40,80 +40,106 @@ flowchart TD
 
 ## Other Key Derived Variables
 
-| Variable | Formula |
-|---|---|
-| `BMI` | `aki_weight / (aki_height/100)^2` |
-| `meld_fda` | 1 if `coalesce(day0_meld, admit_meld, admit_meld_3) > 35` |
-| `rrt_90days` | 1 if `days_to_rrt <= 90` |
-| `lt_90days` | 1 if `time_to_transplant <= 90` |
+| Variable | Formula | Type |
+|---|---|---|
+| `BMI` | `aki_weight / (aki_height/100)^2` | Numerical |
+| `meld_fda` | 1 if `coalesce(day0_meld, admit_meld, admit_meld_3) > 35` | Categorical |
+| `rrt_90days` | 1 if `days_to_rrt <= 90` | Categorical |
+| `lt_90days` | 1 if `time_to_transplant <= 90` | Categorical |
 
-## Analysis Summary
+---
 
-### 1. AE Incidence by Extended Criteria (Tables)
+## Request 1: 11/26/2025
 
-Stratified AE rates comparing standard vs. extended terlipressin criteria:
+| Request | Done |
+|---------|------|
+| AE incidence table stratified by `criteria_2` (ACLF) | ✅ |
+| AE incidence table stratified by `criteria_3` (sCr) | ✅ |
+| AE incidence table stratified by `criteria_4` (Hypoxemia) | ✅ |
+| Univariable AE predictors using all Table 1 covariates, outcome: `any_ae` | ✅ |
+| Univariable AE predictors, outcome: `abdominal_ae` | ✅ |
+| Univariable AE predictors, outcome: `serious_ae` (respfail, brady, terli_7, terli_8) | ✅ |
+| Univariable AE predictors, outcome: `terli_ae_respfail` | ✅ |
+| Multivariable logistic: `aclf_grade + scr_terli_day0 + respiratory_f` → `any_ae` | ✅ |
+| Univariable competing risk (Fine-Gray, death) for all AE types | ✅ |
+| Multivariable competing risk: `any_ae + age + race + hispanic + MELD` | ✅ |
+| Multivariable competing risk: `any_ae + age + race + hispanic + aclf_grade` | ✅ |
+| Multivariable competing risk: `serious_ae + age + race + hispanic + MELD` | ✅ |
+| Multivariable competing risk: `serious_ae + age + race + hispanic + aclf_grade` | ✅ |
+| ICU subgroup: univariable logistic `any_ae` → `icu_admit` (cohort: `location_terli_day0 == 1 or 2`) | ✅ |
+| Transplant subgroup: univariable competing risk (failcode=2, `listed_transplant == 1`) | ✅ |
 
-| Table | Stratification Variable |
-|---|---|
-| `table1_criteria_2.csv` | ACLF criteria (`criteria_2`) |
-| `table1_criteria_3.csv` | sCr criteria (`criteria_3`) |
-| `table1_criteria_4.csv` | Hypoxemia criteria (`criteria_4`) |
+---
 
-### 2. Baseline Characteristics by AE Type (Tables)
+## Request 2: 01/12/2025
 
-Full baseline characteristics stratified by AE occurrence:
+| Request | Done |
+|---------|------|
+| Create `abdominal_ae` = 1 if `terli_ae_abdpain=1` OR `terli_ae_diarrhea=1` OR `terli_ae_nausea=1` | ✅ |
+| Create `serious_ae` = 1 if `terli_ae_volover=1` OR `terli_ae_respfail=1` OR `terli_8=1` OR `terli_7=1` | ✅ |
+| Create `meld_fda` = 1 if `day0_meld > 35`, if missing use `admit_meld` | ✅ |
+| Baseline characteristics table stratified by `any_ae` | ✅ |
+| Baseline characteristics table stratified by `abdominal_ae` | ✅ |
+| Baseline characteristics table stratified by `serious_ae` | ✅ |
+| Baseline characteristics table stratified by `terli_ae_respfail` | ✅ |
+| 4 multivariable competing risk models (any_ae/serious_ae x MELD/aclf_grade) | ✅ |
+| ICU subgroup analysis | ✅ |
+| Transplant-listed subgroup: competing risk with `any_ae, serious_ae, hrs_responders_cat_2, day0_meld, meld_fda, aclf_grade` | ✅ |
 
-| Table | Column Variable |
-|---|---|
-| `table1_any_ae.csv` | Any AE (`any_ae`) |
-| `table1_abdominal_ae.csv` | Abdominal AE (`abdominal_ae`) |
-| `table1_serious_ae.csv` | Serious AE (`serious_ae`) |
-| `table1_terli_ae_respfail.csv` | Respiratory failure (`terli_ae_respfail`) |
+---
 
-### 2b. AE Cross-Tabulations (04/07/2026 Update)
+## Request 3: 01/18/2026
 
-New variables added to stratified tables:
+| Request | Done |
+|---------|------|
+| Reformatted all analyses as column/row specifications | ✅ |
+| Same analyses as Request 2, reformatted | ✅ |
 
-| Variable | Definition |
-|---|---|
-| `comb_effusion_edema` | 4-level: 0=neither, 1=effusion only, 2=edema only, 3=both |
-| `ratio_albumin_b4terli` | `totalalbumin_before_terli / aki_weight` |
-| `ratio_albumin_total` | `total_albumin / aki_weight` |
+---
 
-New tables: `serious_ae` and `terli_ae_respfail` as column variables with AE cross-tabs.
+## Request 4: 01/29/2026
 
-::: {.callout-note}
-Coding fix applied: For patients with `chest_imaging=1`, missing `chest_imaging_effusion` and `chest_imaging_pulmedema` are set to 0.
-:::
+| Request | Done |
+|---------|------|
+| New table: `serious_ae` as column variable with baseline characteristics | ✅ |
+| New table: `terli_ae_respfail` as column variable with baseline characteristics | ✅ |
+| Specify Fine-Gray for competing risk models | ✅ |
+| Update competing risk Model 3: use `admit_meld_3` instead of `day0_meld` | ✅ |
 
-### 3. Logistic Regression — Predictors of AE
+---
 
-- **Univariable**: `scr_terli_day0`, `respiratory_f`, `aclf_grade` → outcome `any_ae`
-- **Multivariable (original)**: `aclf_grade + scr_terli_day0 + respiratory_f` → outcome `any_ae`
-- **Multivariable (04/07/2026 update)**: `sex_male + inr_admit + akin + chest_imaging_effusion` → outcome `any_ae`
+## Request 5: 04/07/2026
 
-### 4. Competing Risk Models — 90-Day Mortality
+### New Variables
 
-**Univariable** (Fine-Gray, failcode=1 death):
-All individual AE types + `serious_ae`
+| Variable | Definition | Done |
+|---|---|---|
+| `comb_effusion_edema = 0` | `chest_imaging_effusion=0` AND `chest_imaging_pulmedema=0` | ✅ |
+| `comb_effusion_edema = 1` | `chest_imaging_effusion=1` AND `chest_imaging_pulmedema=0` | ✅ |
+| `comb_effusion_edema = 2` | `chest_imaging_effusion=0` AND `chest_imaging_pulmedema=1` | ✅ |
+| `comb_effusion_edema = 3` | `chest_imaging_effusion=1` AND `chest_imaging_pulmedema=1` | ✅ |
+| `ratio_albumin_b4terli` | `totalalbumin_before_terli / aki_weight` | ✅ |
+| `ratio_albumin_total` | `total_albumin / aki_weight` | ✅ |
 
-**Multivariable** (4 models):
+### Coding Fix
 
-| Model | Covariates |
-|---|---|
-| 1 | `any_ae + age + race + hispanic + admit_meld_3` *(updated 04/07/2026, was day0_meld)* |
-| 2 | `any_ae + age + race + hispanic` |
-| 3 | `serious_ae + age + race + hispanic + admit_meld_3` |
-| 4 | `serious_ae + age + race + hispanic` |
+| Request | Done |
+|---------|------|
+| For `chest_imaging=1` AND missing `chest_imaging_effusion`, set to 0 | ✅ |
+| For `chest_imaging=1` AND missing `chest_imaging_pulmedema`, set to 0 | ✅ |
 
-### 5. Subgroup: ICU Admission
+### Updated Tables
 
-- **Cohort**: `location_terli_day0 == 1 OR 2`
-- **Model**: Univariable logistic — `any_ae` → `icu_admit`
+| Request | Done |
+|---------|------|
+| Criteria tables (2/3/4): add `serious_AE, comb_effusion_edema, ratio_albumin_b4terli, ratio_albumin_total` | ✅ |
+| Categorical: AE vars + `serious_AE, comb_effusion_edema`; Numerical: both ratios | ✅ |
+| New SAE table: column `serious_AE`, rows: AE vars + `comb_effusion_edema`, both ratios | ✅ |
+| Updated respiratory failure table: add `serious_AE, comb_effusion_edema`, both ratios | ✅ |
 
-### 6. Subgroup: Transplant-Listed Patients
+### Updated Models
 
-- **Cohort**: `listed_transplant == 1`
-- **Model**: Univariable competing risk (failcode=2, transplant)
-- **Covariates**: `any_ae`, `serious_ae`, `hrs_responders_cat_2`, `day0_meld`, `aclf_grade`, `meld_fda`
-
+| Request | Done |
+|---------|------|
+| Multivariable logistic: `sex_male + inr_admit + akin + chest_imaging_effusion` → `any_ae` | ✅ |
+| Competing risk Model 1: `any_ae + age + race + hispanic + admit_meld_3` (was `day0_meld`) | ✅ |

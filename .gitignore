@@ -3,6 +3,7 @@
 .RData
 .Rproj.user/
 .Ruserdata
+*.Rmd
 
 # Data files (do not track raw data)
 *.xlsx

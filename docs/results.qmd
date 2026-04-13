@@ -98,19 +98,38 @@ final_master$time_to_death_status_90days_cmp <- as.factor(final_master$time_to_d
 ```
 
 ```{r table-one-function, include=FALSE}
-# P-value function for table1 package
+# Custom render for continuous: Median [Q1, Q3]
+render.continuous <- function(x, ...) {
+  with(
+    stats.apply.rounding(stats.default(x, ...), digits = 2),
+    c("", `Median [Q1, Q3]` = sprintf("%s [%s, %s]", MEDIAN, Q1, Q3))
+  )
+}
+
+# P-value function: Fisher's exact if any cell < 5, else chi-squared; Kruskal-Wallis for continuous
+# Also tracks which test was used
 pvalue <- function(x, ...) {
   y <- unlist(x)
   g <- factor(rep(1:length(x), times = sapply(x, length)))
   if (is.numeric(y)) {
-    p <- kruskal.test(y ~ g)$p.value
+    p <- tryCatch(kruskal.test(y ~ g)$p.value, error = function(e) NA)
+    test_used <<- c(test_used, "kruskal")
   } else {
-    p <- tryCatch(
-      fisher.test(table(y, g), simulate.p.value = TRUE)$p.value,
-      error = function(e) chisq.test(table(y, g))$p.value
-    )
+    tbl <- table(y, g)
+    if (nrow(tbl) < 2 || ncol(tbl) < 2) {
+      p <- NA
+      test_used <<- c(test_used, "none")
+    } else if (any(tbl < 5)) {
+      p <- tryCatch(fisher.test(tbl, simulate.p.value = TRUE)$p.value,
+                    error = function(e) NA)
+      test_used <<- c(test_used, "fisher")
+    } else {
+      p <- tryCatch(chisq.test(tbl)$p.value, error = function(e) NA)
+      test_used <<- c(test_used, "chisq")
+    }
   }
-  c("", sub("<", "&lt;", format.pval(p, digits = 3, eps = 0.001)))
+  pval <- if (is.na(p)) "" else sub("<", "&lt;", format.pval(p, digits = 3, eps = 0.001))
+  c("", pval)
 }
 
 create_table_one <- function(all_vars, data, strata, output,
@@ -128,11 +147,15 @@ create_table_one <- function(all_vars, data, strata, output,
   # Keep only vars that exist in data
   all_vars <- intersect(all_vars, names(data))
 
-  # Build formula: ~ var1 + var2 + ... | strata
+  # Build formula
   f <- as.formula(paste("~", paste(all_vars, collapse = " + "), "|", strata))
 
-  # Render table1 with p-values
+  # Reset test tracker
+  test_used <<- character(0)
+
+  # Render table1 with p-values and custom continuous render
   tbl <- table1(f, data = data, overall = "Overall",
+                render.continuous = render.continuous,
                 extra.col = list("P-value" = pvalue))
 
   # Also save CSV via tableone for backwards compatibility
@@ -150,8 +173,27 @@ create_table_one <- function(all_vars, data, strata, output,
                     quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
   write.csv(T1_print, file = output, row.names = TRUE)
 
-  tbl
+  # Build footnote from tests used
+  tests <- unique(test_used)
+  labels <- c(
+    kruskal = "Kruskal-Wallis test (continuous variables)",
+    fisher  = "Fisher's exact test (categorical, any expected cell &lt; 5)",
+    chisq   = "Chi-squared test (categorical)"
+  )
+  footnote <- paste(labels[tests], collapse = "; ")
+
+  # Append footnote below the table
+  htmltools::tagList(
+    tbl,
+    htmltools::tags$p(
+      style = "font-size: 0.85em; color: #555; margin-top: 4px;",
+      htmltools::HTML(paste0("Statistical tests: ", footnote))
+    )
+  )
 }
+
+# Initialize global test tracker
+test_used <- character(0)
 ```
 
 ## 1. AE Incidence by Extended Criteria {#criteria-tables}

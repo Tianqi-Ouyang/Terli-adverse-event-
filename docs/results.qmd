@@ -112,9 +112,15 @@ pvalue <- function(x, ...) {
   y <- unlist(x)
   g <- factor(rep(1:length(x), times = sapply(x, length)))
   if (is.numeric(y)) {
-    p <- tryCatch(kruskal.test(y ~ g)$p.value, error = function(e) NA)
-    test_used <<- c(test_used, "kruskal")
-  } else {
+    n_groups <- nlevels(droplevels(g))
+    if (n_groups == 2) {
+      p <- tryCatch(wilcox.test(y ~ g)$p.value, error = function(e) NA)
+      test_used <<- c(test_used, "wilcox")
+    } else {
+      p <- tryCatch(kruskal.test(y ~ g)$p.value, error = function(e) NA)
+      test_used <<- c(test_used, "kruskal")
+    }
+  }  else {
     tbl <- table(y, g)
     if (nrow(tbl) < 2 || ncol(tbl) < 2) {
       p <- NA
@@ -176,8 +182,9 @@ create_table_one <- function(all_vars, data, strata, output,
   # Build footnote from tests used
   tests <- unique(test_used)
   labels <- c(
-    kruskal = "Kruskal-Wallis test (continuous variables)",
-    fisher  = "Fisher's exact test (categorical, any expected cell &lt; 5)",
+    wilcox  = "Mann-Whitney U test (continuous, 2 groups)",
+    kruskal = "Kruskal-Wallis test (continuous, &ge;3 groups)",
+    fisher  = "Fisher&rsquo;s exact test (categorical, any cell &lt; 5)",
     chisq   = "Chi-squared test (categorical)"
   )
   footnote <- paste(labels[tests], collapse = "; ")

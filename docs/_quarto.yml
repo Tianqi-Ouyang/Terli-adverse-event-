@@ -10,6 +10,10 @@ website:
     left:
       - href: index.qmd
         text: Summary
+      - href: redcap_variables.qmd
+        text: REDCap Variables
+      - href: derived_variables.qmd
+        text: Derived Variables
       - href: results.qmd
         text: Results
 

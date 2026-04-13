@@ -374,7 +374,7 @@ create_table_one(
 ```{r table-sae}
 sae_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
               "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
-              "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")
+              "terli_ae_respfail", "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")
 
 sae_cat_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
                   "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",

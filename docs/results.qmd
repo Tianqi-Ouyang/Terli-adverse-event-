@@ -41,6 +41,7 @@ library(musclerefdata)
 library(transplantr)
 library(sqldf)
 library(table1)
+library(kableExtra)
 ```
 
 ```{r data-load, include=FALSE}
@@ -118,6 +119,15 @@ create_table_one <- function(all_vars, data, strata, output,
   )
 
   write.csv(T1_after_print, file = output, row.names = TRUE)
+
+  # Display as HTML table
+  df <- as.data.frame(T1_after_print)
+  df <- cbind(Variable = rownames(df), df)
+  rownames(df) <- NULL
+  kable(df, format = "html", escape = FALSE) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                  full_width = TRUE, font_size = 12) %>%
+    scroll_box(width = "100%", height = "600px")
 }
 ```
 

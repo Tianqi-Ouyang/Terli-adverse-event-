@@ -312,75 +312,58 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="request-1-11262025">Request 1: 11/26/2025</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 60%">
-<col style="width: 40%">
+<col style="width: 100%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Request</th>
-<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>AE incidence table stratified by <code>criteria_2</code> (ACLF)</td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>AE incidence table stratified by <code>criteria_3</code> (sCr)</td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>AE incidence table stratified by <code>criteria_4</code> (Hypoxemia)</td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Univariable AE predictors using all Table 1 covariates, outcome: <code>any_ae</code></td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Univariable AE predictors, outcome: <code>abdominal_ae</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Univariable AE predictors, outcome: <code>serious_ae</code> (respfail, brady, terli_7, terli_8)</td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Univariable AE predictors, outcome: <code>terli_ae_respfail</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Multivariable logistic: <code>aclf_grade + scr_terli_day0 + respiratory_f</code> → <code>any_ae</code></td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Univariable competing risk (Fine-Gray, death) for all AE types</td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Multivariable competing risk: <code>any_ae + age + race + hispanic + MELD</code></td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Multivariable competing risk: <code>any_ae + age + race + hispanic + aclf_grade</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Multivariable competing risk: <code>serious_ae + age + race + hispanic + MELD</code></td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Multivariable competing risk: <code>serious_ae + age + race + hispanic + aclf_grade</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>ICU subgroup: univariable logistic <code>any_ae</code> → <code>icu_admit</code> (cohort: <code>location_terli_day0 == 1 or 2</code>)</td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Transplant subgroup: univariable competing risk (failcode=2, <code>listed_transplant == 1</code>)</td>
-<td>✅</td>
 </tr>
 </tbody>
 </table>
@@ -390,55 +373,43 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="request-2-01122025">Request 2: 01/12/2025</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 60%">
-<col style="width: 40%">
+<col style="width: 100%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Request</th>
-<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Create <code>abdominal_ae</code> = 1 if <code>terli_ae_abdpain=1</code> OR <code>terli_ae_diarrhea=1</code> OR <code>terli_ae_nausea=1</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Create <code>serious_ae</code> = 1 if <code>terli_ae_volover=1</code> OR <code>terli_ae_respfail=1</code> OR <code>terli_8=1</code> OR <code>terli_7=1</code></td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Create <code>meld_fda</code> = 1 if <code>day0_meld &gt; 35</code>, if missing use <code>admit_meld</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Baseline characteristics table stratified by <code>any_ae</code></td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Baseline characteristics table stratified by <code>abdominal_ae</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Baseline characteristics table stratified by <code>serious_ae</code></td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Baseline characteristics table stratified by <code>terli_ae_respfail</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>4 multivariable competing risk models (any_ae/serious_ae x MELD/aclf_grade)</td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>ICU subgroup analysis</td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Transplant-listed subgroup: competing risk with <code>any_ae, serious_ae, hrs_responders_cat_2, day0_meld, meld_fda, aclf_grade</code></td>
-<td>✅</td>
 </tr>
 </tbody>
 </table>
@@ -450,17 +421,14 @@ ul.task-list li input[type="checkbox"] {
 <thead>
 <tr class="header">
 <th>Request</th>
-<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Reformatted all analyses as column/row specifications</td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Same analyses as Request 2, reformatted</td>
-<td>✅</td>
 </tr>
 </tbody>
 </table>
@@ -470,31 +438,25 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="request-4-01292026">Request 4: 01/29/2026</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 60%">
-<col style="width: 40%">
+<col style="width: 100%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Request</th>
-<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>New table: <code>serious_ae</code> as column variable with baseline characteristics</td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>New table: <code>terli_ae_respfail</code> as column variable with baseline characteristics</td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>Specify Fine-Gray for competing risk models</td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Update competing risk Model 3: use <code>admit_meld_3</code> instead of <code>day0_meld</code></td>
-<td>✅</td>
 </tr>
 </tbody>
 </table>
@@ -506,47 +468,39 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="new-variables">New Variables</h3>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
+<col style="width: 50%">
+<col style="width: 50%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Variable</th>
 <th>Definition</th>
-<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td><code>comb_effusion_edema = 0</code></td>
 <td><code>chest_imaging_effusion=0</code> AND <code>chest_imaging_pulmedema=0</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td><code>comb_effusion_edema = 1</code></td>
 <td><code>chest_imaging_effusion=1</code> AND <code>chest_imaging_pulmedema=0</code></td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td><code>comb_effusion_edema = 2</code></td>
 <td><code>chest_imaging_effusion=0</code> AND <code>chest_imaging_pulmedema=1</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td><code>comb_effusion_edema = 3</code></td>
 <td><code>chest_imaging_effusion=1</code> AND <code>chest_imaging_pulmedema=1</code></td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td><code>ratio_albumin_b4terli</code></td>
 <td><code>totalalbumin_before_terli / aki_weight</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td><code>ratio_albumin_total</code></td>
 <td><code>total_albumin / aki_weight</code></td>
-<td>✅</td>
 </tr>
 </tbody>
 </table>
@@ -555,23 +509,19 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="coding-fix">Coding Fix</h3>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 60%">
-<col style="width: 40%">
+<col style="width: 100%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Request</th>
-<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>For <code>chest_imaging=1</code> AND missing <code>chest_imaging_effusion</code>, set to 0</td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>For <code>chest_imaging=1</code> AND missing <code>chest_imaging_pulmedema</code>, set to 0</td>
-<td>✅</td>
 </tr>
 </tbody>
 </table>
@@ -580,31 +530,25 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="updated-tables">Updated Tables</h3>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 60%">
-<col style="width: 40%">
+<col style="width: 100%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Request</th>
-<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Criteria tables (2/3/4): add <code>serious_AE, comb_effusion_edema, ratio_albumin_b4terli, ratio_albumin_total</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Categorical: AE vars + <code>serious_AE, comb_effusion_edema</code>; Numerical: both ratios</td>
-<td>✅</td>
 </tr>
 <tr class="odd">
 <td>New SAE table: column <code>serious_AE</code>, rows: AE vars + <code>comb_effusion_edema</code>, both ratios</td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Updated respiratory failure table: add <code>serious_AE, comb_effusion_edema</code>, both ratios</td>
-<td>✅</td>
 </tr>
 </tbody>
 </table>
@@ -613,23 +557,19 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="updated-models">Updated Models</h3>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 60%">
-<col style="width: 40%">
+<col style="width: 100%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Request</th>
-<th>Done</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Multivariable logistic: <code>sex_male + inr_admit + akin + chest_imaging_effusion</code> → <code>any_ae</code></td>
-<td>✅</td>
 </tr>
 <tr class="even">
 <td>Competing risk Model 1: <code>any_ae + age + race + hispanic + admit_meld_3</code> (was <code>day0_meld</code>)</td>
-<td>✅</td>
 </tr>
 </tbody>
 </table>

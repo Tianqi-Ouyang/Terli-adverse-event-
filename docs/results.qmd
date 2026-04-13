@@ -126,7 +126,7 @@ pvalue <- function(x, ...) {
       p <- NA
       test_used <<- c(test_used, "none")
     } else if (any(tbl < 5)) {
-      p <- tryCatch(fisher.test(tbl, simulate.p.value = TRUE)$p.value,
+      p <- tryCatch(fisher.test(tbl)$p.value,
                     error = function(e) NA)
       test_used <<- c(test_used, "fisher")
     } else {
@@ -180,14 +180,14 @@ create_table_one <- function(all_vars, data, strata, output,
   write.csv(T1_print, file = output, row.names = TRUE)
 
   # Build footnote from tests used
-  tests <- unique(test_used)
+  tests <- setdiff(unique(test_used), "none")
   labels <- c(
     wilcox  = "Mann-Whitney U test (continuous, 2 groups)",
     kruskal = "Kruskal-Wallis test (continuous, &ge;3 groups)",
     fisher  = "Fisher&rsquo;s exact test (categorical, any cell &lt; 5)",
     chisq   = "Chi-squared test (categorical)"
   )
-  footnote <- paste(labels[tests], collapse = "; ")
+  footnote <- paste(na.omit(labels[tests]), collapse = "; ")
 
   # Append footnote below the table
   htmltools::tagList(

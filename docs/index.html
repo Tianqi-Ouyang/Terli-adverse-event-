@@ -134,8 +134,6 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#subgroup-icu-admission" id="toc-subgroup-icu-admission" class="nav-link" data-scroll-target="#subgroup-icu-admission">5. Subgroup: ICU Admission</a></li>
   <li><a href="#subgroup-transplant-listed-patients" id="toc-subgroup-transplant-listed-patients" class="nav-link" data-scroll-target="#subgroup-transplant-listed-patients">6. Subgroup: Transplant-Listed Patients</a></li>
   </ul></li>
-  <li><a href="#code-files" id="toc-code-files" class="nav-link" data-scroll-target="#code-files">Code Files</a></li>
-  <li><a href="#data-request-history" id="toc-data-request-history" class="nav-link" data-scroll-target="#data-request-history">Data Request History</a></li>
   </ul>
 </nav>
     </div>
@@ -214,57 +212,57 @@ ul.task-list li input[type="checkbox"] {
 <tr class="odd">
 <td><code>any_ae</code></td>
 <td>Any adverse event</td>
-<td>Binary</td>
+<td>Categorical</td>
 </tr>
 <tr class="even">
 <td><code>abdominal_ae</code></td>
 <td>abdpain OR diarrhea OR nausea</td>
-<td>Composite</td>
+<td>Categorical</td>
 </tr>
 <tr class="odd">
 <td><code>serious_ae</code></td>
 <td>respfail OR brady OR terli_7 OR terli_8</td>
-<td>Composite</td>
+<td>Categorical</td>
 </tr>
 <tr class="even">
 <td><code>terli_ae_abdpain</code></td>
 <td>Abdominal pain</td>
-<td>Individual</td>
+<td>Categorical</td>
 </tr>
 <tr class="odd">
 <td><code>terli_ae_nausea</code></td>
 <td>Nausea</td>
-<td>Individual</td>
+<td>Categorical</td>
 </tr>
 <tr class="even">
 <td><code>terli_ae_diarrhea</code></td>
 <td>Diarrhea</td>
-<td>Individual</td>
+<td>Categorical</td>
 </tr>
 <tr class="odd">
 <td><code>terli_ae_volover</code></td>
 <td>Volume overload</td>
-<td>Individual</td>
+<td>Categorical</td>
 </tr>
 <tr class="even">
 <td><code>terli_ae_brady</code></td>
 <td>Bradycardia</td>
-<td>Individual</td>
+<td>Categorical</td>
 </tr>
 <tr class="odd">
 <td><code>terli_ae_respfail</code></td>
 <td>Respiratory failure</td>
-<td>Individual</td>
+<td>Categorical</td>
 </tr>
 <tr class="even">
 <td><code>terli_7</code></td>
 <td>Ischemic event 1</td>
-<td>Individual</td>
+<td>Categorical</td>
 </tr>
 <tr class="odd">
 <td><code>terli_8</code></td>
 <td>Ischemic event 2</td>
-<td>Individual</td>
+<td>Categorical</td>
 </tr>
 </tbody>
 </table>
@@ -465,82 +463,9 @@ Note
 <li><strong>Model</strong>: Univariable competing risk (failcode=2, transplant)</li>
 <li><strong>Covariates</strong>: <code>any_ae</code>, <code>serious_ae</code>, <code>hrs_responders_cat_2</code>, <code>day0_meld</code>, <code>aclf_grade</code>, <code>meld_fda</code></li>
 </ul>
-</section>
-</section>
-<section id="code-files" class="level2">
-<h2 class="anchored" data-anchor-id="code-files">Code Files</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>File</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>Adverse-event.Rmd</code></td>
-<td>Original analysis (01/2025 request)</td>
-</tr>
-<tr class="even">
-<td><code>Adverse event 2026.Rmd</code></td>
-<td>Updated analysis (01/2026 request, adds <code>aclf_grade</code> recoding)</td>
-</tr>
-<tr class="odd">
-<td><code>code/Adverse-event.Rmd</code></td>
-<td>Copy in organized directory</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="data-request-history" class="level2">
-<h2 class="anchored" data-anchor-id="data-request-history">Data Request History</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Date</th>
-<th>File</th>
-<th>Key Changes</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>11/26/2025</td>
-<td><code>requests/...11262025.docx</code></td>
-<td>Initial request: criteria tables, univariable AE predictors, 90-day survival</td>
-</tr>
-<tr class="even">
-<td>01/12/2025</td>
-<td><code>requests/...01122025.docx</code></td>
-<td>Added multivariable models, ICU subgroup, transplant subgroup</td>
-</tr>
-<tr class="odd">
-<td>01/18/2026</td>
-<td><code>requests/...01182026.docx</code></td>
-<td>Reformatted as column/row specifications</td>
-</tr>
-<tr class="even">
-<td>01/29/2026</td>
-<td><code>requests/...01292026.docx</code></td>
-<td>Added <code>serious_ae</code> table, <code>terli_ae_respfail</code> table, Fine-Gray specification</td>
-</tr>
-<tr class="odd">
-<td><strong>04/07/2026</strong></td>
-<td><code>requests/...04072026.docx</code></td>
-<td>New variables (<code>comb_effusion_edema</code>, albumin ratios), updated multivariate models, SAE cross-tabs — <strong>IMPLEMENTED</strong></td>
-</tr>
-</tbody>
-</table>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

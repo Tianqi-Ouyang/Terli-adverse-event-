@@ -25,7 +25,7 @@
     "href": "index.html#adverse-event-definitions",
     "title": "Adverse Event Analysis — Summary",
     "section": "Adverse Event Definitions",
-    "text": "Adverse Event Definitions\n\n\n\nVariable\nDefinition\nType\n\n\n\n\nany_ae\nAny adverse event\nBinary\n\n\nabdominal_ae\nabdpain OR diarrhea OR nausea\nComposite\n\n\nserious_ae\nrespfail OR brady OR terli_7 OR terli_8\nComposite\n\n\nterli_ae_abdpain\nAbdominal pain\nIndividual\n\n\nterli_ae_nausea\nNausea\nIndividual\n\n\nterli_ae_diarrhea\nDiarrhea\nIndividual\n\n\nterli_ae_volover\nVolume overload\nIndividual\n\n\nterli_ae_brady\nBradycardia\nIndividual\n\n\nterli_ae_respfail\nRespiratory failure\nIndividual\n\n\nterli_7\nIschemic event 1\nIndividual\n\n\nterli_8\nIschemic event 2\nIndividual"
+    "text": "Adverse Event Definitions\n\n\n\nVariable\nDefinition\nType\n\n\n\n\nany_ae\nAny adverse event\nCategorical\n\n\nabdominal_ae\nabdpain OR diarrhea OR nausea\nCategorical\n\n\nserious_ae\nrespfail OR brady OR terli_7 OR terli_8\nCategorical\n\n\nterli_ae_abdpain\nAbdominal pain\nCategorical\n\n\nterli_ae_nausea\nNausea\nCategorical\n\n\nterli_ae_diarrhea\nDiarrhea\nCategorical\n\n\nterli_ae_volover\nVolume overload\nCategorical\n\n\nterli_ae_brady\nBradycardia\nCategorical\n\n\nterli_ae_respfail\nRespiratory failure\nCategorical\n\n\nterli_7\nIschemic event 1\nCategorical\n\n\nterli_8\nIschemic event 2\nCategorical"
   },
   {
     "objectID": "index.html#other-key-derived-variables",
@@ -40,20 +40,6 @@
     "title": "Adverse Event Analysis — Summary",
     "section": "Analysis Summary",
     "text": "Analysis Summary\n\n1. AE Incidence by Extended Criteria (Tables)\nStratified AE rates comparing standard vs. extended terlipressin criteria:\n\n\n\nTable\nStratification Variable\n\n\n\n\ntable1_criteria_2.csv\nACLF criteria (criteria_2)\n\n\ntable1_criteria_3.csv\nsCr criteria (criteria_3)\n\n\ntable1_criteria_4.csv\nHypoxemia criteria (criteria_4)\n\n\n\n\n\n2. Baseline Characteristics by AE Type (Tables)\nFull baseline characteristics stratified by AE occurrence:\n\n\n\n\n\n\n\nTable\nColumn Variable\n\n\n\n\ntable1_any_ae.csv\nAny AE (any_ae)\n\n\ntable1_abdominal_ae.csv\nAbdominal AE (abdominal_ae)\n\n\ntable1_serious_ae.csv\nSerious AE (serious_ae)\n\n\ntable1_terli_ae_respfail.csv\nRespiratory failure (terli_ae_respfail)\n\n\n\n\n\n2b. AE Cross-Tabulations (04/07/2026 Update)\nNew variables added to stratified tables:\n\n\n\n\n\n\n\nVariable\nDefinition\n\n\n\n\ncomb_effusion_edema\n4-level: 0=neither, 1=effusion only, 2=edema only, 3=both\n\n\nratio_albumin_b4terli\ntotalalbumin_before_terli / aki_weight\n\n\nratio_albumin_total\ntotal_albumin / aki_weight\n\n\n\nNew tables: serious_ae and terli_ae_respfail as column variables with AE cross-tabs.\n\n\n\n\n\n\nNote\n\n\n\nCoding fix applied: For patients with chest_imaging=1, missing chest_imaging_effusion and chest_imaging_pulmedema are set to 0.\n\n\n\n\n3. Logistic Regression — Predictors of AE\n\nUnivariable: scr_terli_day0, respiratory_f, aclf_grade → outcome any_ae\nMultivariable (original): aclf_grade + scr_terli_day0 + respiratory_f → outcome any_ae\nMultivariable (04/07/2026 update): sex_male + inr_admit + akin + chest_imaging_effusion → outcome any_ae\n\n\n\n4. Competing Risk Models — 90-Day Mortality\nUnivariable (Fine-Gray, failcode=1 death): All individual AE types + serious_ae\nMultivariable (4 models):\n\n\n\n\n\n\n\nModel\nCovariates\n\n\n\n\n1\nany_ae + age + race + hispanic + admit_meld_3 (updated 04/07/2026, was day0_meld)\n\n\n2\nany_ae + age + race + hispanic\n\n\n3\nserious_ae + age + race + hispanic + admit_meld_3\n\n\n4\nserious_ae + age + race + hispanic\n\n\n\n\n\n5. Subgroup: ICU Admission\n\nCohort: location_terli_day0 == 1 OR 2\nModel: Univariable logistic — any_ae → icu_admit\n\n\n\n6. Subgroup: Transplant-Listed Patients\n\nCohort: listed_transplant == 1\nModel: Univariable competing risk (failcode=2, transplant)\nCovariates: any_ae, serious_ae, hrs_responders_cat_2, day0_meld, aclf_grade, meld_fda"
-  },
-  {
-    "objectID": "index.html#code-files",
-    "href": "index.html#code-files",
-    "title": "Adverse Event Analysis — Summary",
-    "section": "Code Files",
-    "text": "Code Files\n\n\n\n\n\n\n\nFile\nDescription\n\n\n\n\nAdverse-event.Rmd\nOriginal analysis (01/2025 request)\n\n\nAdverse event 2026.Rmd\nUpdated analysis (01/2026 request, adds aclf_grade recoding)\n\n\ncode/Adverse-event.Rmd\nCopy in organized directory"
-  },
-  {
-    "objectID": "index.html#data-request-history",
-    "href": "index.html#data-request-history",
-    "title": "Adverse Event Analysis — Summary",
-    "section": "Data Request History",
-    "text": "Data Request History\n\n\n\n\n\n\n\n\nDate\nFile\nKey Changes\n\n\n\n\n11/26/2025\nrequests/...11262025.docx\nInitial request: criteria tables, univariable AE predictors, 90-day survival\n\n\n01/12/2025\nrequests/...01122025.docx\nAdded multivariable models, ICU subgroup, transplant subgroup\n\n\n01/18/2026\nrequests/...01182026.docx\nReformatted as column/row specifications\n\n\n01/29/2026\nrequests/...01292026.docx\nAdded serious_ae table, terli_ae_respfail table, Fine-Gray specification\n\n\n04/07/2026\nrequests/...04072026.docx\nNew variables (comb_effusion_edema, albumin ratios), updated multivariate models, SAE cross-tabs — IMPLEMENTED"
   },
   {
     "objectID": "results.html",

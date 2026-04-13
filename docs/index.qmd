@@ -26,17 +26,17 @@ flowchart TD
 
 | Variable | Definition | Type |
 |---|---|---|
-| `any_ae` | Any adverse event | Binary |
-| `abdominal_ae` | abdpain OR diarrhea OR nausea | Composite |
-| `serious_ae` | respfail OR brady OR terli_7 OR terli_8 | Composite |
-| `terli_ae_abdpain` | Abdominal pain | Individual |
-| `terli_ae_nausea` | Nausea | Individual |
-| `terli_ae_diarrhea` | Diarrhea | Individual |
-| `terli_ae_volover` | Volume overload | Individual |
-| `terli_ae_brady` | Bradycardia | Individual |
-| `terli_ae_respfail` | Respiratory failure | Individual |
-| `terli_7` | Ischemic event 1 | Individual |
-| `terli_8` | Ischemic event 2 | Individual |
+| `any_ae` | Any adverse event | Categorical |
+| `abdominal_ae` | abdpain OR diarrhea OR nausea | Categorical |
+| `serious_ae` | respfail OR brady OR terli_7 OR terli_8 | Categorical |
+| `terli_ae_abdpain` | Abdominal pain | Categorical |
+| `terli_ae_nausea` | Nausea | Categorical |
+| `terli_ae_diarrhea` | Diarrhea | Categorical |
+| `terli_ae_volover` | Volume overload | Categorical |
+| `terli_ae_brady` | Bradycardia | Categorical |
+| `terli_ae_respfail` | Respiratory failure | Categorical |
+| `terli_7` | Ischemic event 1 | Categorical |
+| `terli_8` | Ischemic event 2 | Categorical |
 
 ## Other Key Derived Variables
 
@@ -117,20 +117,3 @@ All individual AE types + `serious_ae`
 - **Model**: Univariable competing risk (failcode=2, transplant)
 - **Covariates**: `any_ae`, `serious_ae`, `hrs_responders_cat_2`, `day0_meld`, `aclf_grade`, `meld_fda`
 
-## Code Files
-
-| File | Description |
-|---|---|
-| `Adverse-event.Rmd` | Original analysis (01/2025 request) |
-| `Adverse event 2026.Rmd` | Updated analysis (01/2026 request, adds `aclf_grade` recoding) |
-| `code/Adverse-event.Rmd` | Copy in organized directory |
-
-## Data Request History
-
-| Date | File | Key Changes |
-|---|---|---|
-| 11/26/2025 | `requests/...11262025.docx` | Initial request: criteria tables, univariable AE predictors, 90-day survival |
-| 01/12/2025 | `requests/...01122025.docx` | Added multivariable models, ICU subgroup, transplant subgroup |
-| 01/18/2026 | `requests/...01182026.docx` | Reformatted as column/row specifications |
-| 01/29/2026 | `requests/...01292026.docx` | Added `serious_ae` table, `terli_ae_respfail` table, Fine-Gray specification |
-| **04/07/2026** | `requests/...04072026.docx` | New variables (`comb_effusion_edema`, albumin ratios), updated multivariate models, SAE cross-tabs — **IMPLEMENTED** |

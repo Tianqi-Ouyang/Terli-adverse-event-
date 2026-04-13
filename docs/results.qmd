@@ -120,14 +120,16 @@ create_table_one <- function(all_vars, data, strata, output,
 
   write.csv(T1_after_print, file = output, row.names = TRUE)
 
-  # Display as HTML table
+  # Build HTML table
   df <- as.data.frame(T1_after_print)
   df <- cbind(Variable = rownames(df), df)
   rownames(df) <- NULL
-  kable(df, format = "html", escape = FALSE) %>%
+  html <- kable(df, format = "html", escape = FALSE) %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
                   full_width = TRUE, font_size = 12) %>%
     scroll_box(width = "100%", height = "600px")
+
+  cat(as.character(html))
 }
 ```
 
@@ -135,7 +137,7 @@ create_table_one <- function(all_vars, data, strata, output,
 
 AE rates stratified by ACLF (`criteria_2`), sCr (`criteria_3`), and Hypoxemia (`criteria_4`) criteria.
 
-```{r criteria-tables}
+```{r criteria-vars, include=FALSE}
 ae_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
              "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8", "terli_ae_respfail",
              "serious_ae", "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")
@@ -146,15 +148,36 @@ ae_cat_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diar
 
 exact_vars <- c("terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
                 "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8")
+```
 
-for (crit in c("criteria_2", "criteria_3", "criteria_4")) {
-  create_table_one(
-    all_vars = ae_vars, cat_vars = ae_cat_vars,
-    data = final_master, exact = exact_vars,
-    strata = crit,
-    output = paste0('/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_', crit, '.csv')
-  )
-}
+### ACLF (criteria_2)
+```{r criteria-2, results='asis'}
+create_table_one(
+  all_vars = ae_vars, cat_vars = ae_cat_vars,
+  data = final_master, exact = exact_vars,
+  strata = "criteria_2",
+  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_criteria_2.csv'
+)
+```
+
+### sCr (criteria_3)
+```{r criteria-3, results='asis'}
+create_table_one(
+  all_vars = ae_vars, cat_vars = ae_cat_vars,
+  data = final_master, exact = exact_vars,
+  strata = "criteria_3",
+  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_criteria_3.csv'
+)
+```
+
+### Hypoxemia (criteria_4)
+```{r criteria-4, results='asis'}
+create_table_one(
+  all_vars = ae_vars, cat_vars = ae_cat_vars,
+  data = final_master, exact = exact_vars,
+  strata = "criteria_4",
+  output = '/Users/to909/Desktop/Terlipressin projects/Adverse event/results/table1_criteria_4.csv'
+)
 ```
 
 ## 2. Baseline Characteristics by AE Type {#baseline-tables}
@@ -240,7 +263,7 @@ final_master <- final_master %>% mutate_at(categorical_vars, as.factor)
 ```
 
 ### Any AE
-```{r table1-any-ae}
+```{r table1-any-ae, results='asis'}
 create_table_one(
   all_vars = all_vars, cat_vars = categorical_vars,
   data = final_master, strata = "any_ae",
@@ -249,7 +272,7 @@ create_table_one(
 ```
 
 ### Abdominal AE
-```{r table1-abdominal-ae}
+```{r table1-abdominal-ae, results='asis'}
 create_table_one(
   all_vars = all_vars, cat_vars = categorical_vars,
   data = final_master, strata = "abdominal_ae",
@@ -258,7 +281,7 @@ create_table_one(
 ```
 
 ### Serious AE
-```{r table1-serious-ae}
+```{r table1-serious-ae, results='asis'}
 create_table_one(
   all_vars = all_vars, cat_vars = categorical_vars,
   data = final_master, strata = "serious_ae",
@@ -267,7 +290,7 @@ create_table_one(
 ```
 
 ### Respiratory Failure
-```{r table1-respfail}
+```{r table1-respfail, results='asis'}
 create_table_one(
   all_vars = all_vars, cat_vars = categorical_vars,
   data = final_master, strata = "terli_ae_respfail",
@@ -278,7 +301,7 @@ create_table_one(
 ## 2b. AE Cross-Tabulations (04/07/2026 Update) {#ae-cross-tables}
 
 ### SAE (Serious AE as column)
-```{r table-sae}
+```{r table-sae, results='asis'}
 sae_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
               "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
               "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")
@@ -295,7 +318,7 @@ create_table_one(
 ```
 
 ### Respiratory Failure (with new variables)
-```{r table-respfail-updated}
+```{r table-respfail-updated, results='asis'}
 respfail_vars <- c("any_ae", "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
                    "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
                    "serious_ae", "comb_effusion_edema", "ratio_albumin_b4terli", "ratio_albumin_total")

@@ -203,6 +203,51 @@ create_table_one <- function(all_vars, data, strata, output,
 test_used <- character(0)
 ```
 
+## 0. Missing-Data Check — 07/20/2026 Data Request {#missing-check}
+
+Missingness for every variable involved in the 07/20/2026 request (cumulative dose comparison + multivariable AE models + Fine-Gray). Reported as `N missing / N total (% missing)`.
+
+```{r missing-check, echo=TRUE}
+miss_tbl <- function(df, vars, label) {
+  vars <- intersect(vars, names(df))
+  df %>%
+    dplyr::select(dplyr::all_of(vars)) %>%
+    dplyr::summarise(dplyr::across(dplyr::everything(),
+                     ~ sprintf("%d / %d (%.1f%%)",
+                               sum(is.na(.)), length(.),
+                               100 * mean(is.na(.))))) %>%
+    tidyr::pivot_longer(dplyr::everything(),
+                        names_to = "variable", values_to = "missing") %>%
+    dplyr::mutate(scope = label)
+}
+
+dose_vars <- paste0("total_dose_terli_day", 0:13)
+covar_45  <- c("sex_male", "inr_admit", "scr_terli_day0", "chest_imaging_effusion")
+covar_6   <- c("sex_male", "scr_terli_day0", "chest_imaging_effusion")
+covar_7   <- c("any_ae", "age", "race", "hispanic", "admit_meld_3",
+               "time_to_death_90days_cmp", "time_to_death_status_90days_cmp")
+
+c1 <- final_master %>% dplyr::filter(terli_route_day0 == 1)
+c2 <- final_master %>% dplyr::filter(terli_route_day0 == 2)
+
+miss_out <- dplyr::bind_rows(
+  miss_tbl(final_master, "terli_route_day0",                 "Full cohort: route flag"),
+  miss_tbl(c1,           dose_vars,                          "Cohort route=1 (bolus): daily dose"),
+  miss_tbl(c2,           dose_vars,                          "Cohort route=2 (infusion): daily dose"),
+  miss_tbl(final_master, c("any_ae", covar_45),              "Model 4: any_ae + covariates"),
+  miss_tbl(final_master, c("serious_ae", covar_45),          "Model 5: serious_ae + covariates"),
+  miss_tbl(final_master, c("terli_ae_respfail", covar_6),    "Model 6: terli_ae_respfail + covariates"),
+  miss_tbl(final_master, covar_7,                            "Model 7: Fine-Gray variables")
+)
+
+cat("Cohort sizes:\n",
+    "  Full N          =", nrow(final_master), "\n",
+    "  route=1 (bolus)     =", nrow(c1), "\n",
+    "  route=2 (infusion)  =", nrow(c2), "\n\n")
+
+knitr::kable(miss_out, caption = "Missingness for variables in the 07/20/2026 analysis request")
+```
+
 ## 1. AE Incidence by Extended Criteria {#criteria-tables}
 
 AE rates stratified by ACLF (`criteria_2`), sCr (`criteria_3`), and Hypoxemia (`criteria_4`) criteria.

@@ -599,3 +599,226 @@ final_master_listed %>%
     exponentiate = TRUE
   )
 ```
+
+## 8. AE Data Request (07/20/2026) — Complete-Case Analyses {#request-0720}
+
+Complete-case analyses (no imputation for now — to be updated later). **Models 4–6 are fit on the full analytic cohort**; the *n* in the request (42 / 32 / 23) is the number of **events** (outcome = 1), not a restricted cohort — restricting to event-positive patients would make the outcome constant and the model unfit.
+
+::: {.callout-warning}
+**Complete-case shrinks EPV below the request's estimate.** Dropping rows with any missing covariate reduces the effective events, so events-per-variable falls versus the planned 10.5 / 8.0 / 7.7:
+
+| Model | Outcome | Full-cohort events | Complete-case N (events) | Effective EPV |
+|:--|:--|:--:|:--:|:--:|
+| 4 | `any_ae` | 42 | 191 (32) | **8.0** |
+| 5 | `serious_ae` | 32 | 191 (23) | **5.8** |
+| 6 | `terli_ae_respfail` | 23 | 196 (17) | **5.7** |
+
+Models 5 and 6 (EPV < 6) are prone to overfitting and unstable estimates — interpret ORs cautiously. Multiple imputation (planned next) would recover the dropped events and restore EPV. Each model caption below recomputes N / events / EPV at render time; a separate diagnostics table flags any model showing quasi-complete separation.
+:::
+
+### 8.1 Cumulative terlipressin dose by day-0 route {#dose-sum}
+
+Per-patient cumulative dose = sum of the daily total terlipressin dose, day 0 through day 13, missing daily dose treated as 0 (`na.rm = TRUE`). Cohorts: `terli_route_day0 == 1` (Task 1, IV bolus) and `== 2` (Task 2, continuous infusion).
+
+::: {.callout-important}
+**Column-name correction.** The request listed `total_dose_terli_day0 … total_dose_terli_day13`, but the master dataset only has `total_dose_terli_day0` under that name — the day 1–13 daily totals are stored as **`total_terli_day1 … total_terli_day13`** (the word "dose" is dropped for days 1–13). This section uses the correct columns. Summing only `total_dose_terli_day*` (as literally written) would have collapsed the "cumulative" dose to just the day-0 value.
+:::
+
+```{r dose-cumulative}
+#| code-fold: true
+#| code-summary: "Show code"
+# Daily total terlipressin dose: day 0 uses total_dose_terli_day0;
+# days 1-13 use total_terli_day{N} (naming differs in the export).
+dose_vars_all <- c("total_dose_terli_day0", paste0("total_terli_day", 1:13))
+dose_missing  <- setdiff(dose_vars_all, names(final_master))
+dose_vars     <- intersect(dose_vars_all, names(final_master))
+if (length(dose_missing) > 0) message("Dose columns not found: ", paste(dose_missing, collapse = ", "))
+
+# route may be a factor by this point — coerce back to numeric safely
+route_num <- suppressWarnings(as.numeric(as.character(final_master$terli_route_day0)))
+
+dose_df <- final_master %>%
+  mutate(
+    route_num = route_num,
+    cumulative_dose = rowSums(
+      across(all_of(dose_vars), ~ suppressWarnings(as.numeric(as.character(.)))),
+      na.rm = TRUE
+    )
+  ) %>%
+  filter(route_num %in% c(1, 2)) %>%
+  mutate(route = factor(route_num, levels = c(1, 2),
+                        labels = c("IV bolus (route=1)", "Continuous infusion (route=2)")))
+
+dose_summary <- dose_df %>%
+  group_by(route) %>%
+  summarise(
+    N              = n(),
+    `Mean ± SD`    = sprintf("%.1f ± %.1f", mean(cumulative_dose), sd(cumulative_dose)),
+    `Median [IQR]` = sprintf("%.1f [%.1f, %.1f]", median(cumulative_dose),
+                             quantile(cumulative_dose, .25), quantile(cumulative_dose, .75)),
+    `Min, Max`     = sprintf("%.1f, %.1f", min(cumulative_dose), max(cumulative_dose)),
+    `Group total`  = sprintf("%.1f", sum(cumulative_dose)),
+    .groups = "drop"
+  )
+
+knitr::kable(dose_summary,
+             caption = "Per-patient cumulative terlipressin dose (day 0–13) by day-0 route")
+
+# --- Data-quality flag: implausible daily doses (typical terli <= ~12 mg/day) ---
+flag <- dose_df %>%
+  mutate(across(all_of(dose_vars), ~ suppressWarnings(as.numeric(as.character(.))))) %>%
+  rowwise() %>%
+  mutate(max_daily = max(c_across(all_of(dose_vars)), na.rm = TRUE)) %>%
+  ungroup() %>%
+  filter(max_daily > 50) %>%
+  select(route, any_of(c("record_id", "study_id")), max_daily)
+if (nrow(flag) > 0) {
+  cat("DATA-QUALITY FLAG — daily dose > 50 mg (likely entry error; inflates the mean/t-test):\n")
+  print(as.data.frame(flag))
+}
+```
+
+### 8.2 Comparison of cumulative dose between routes (Task 3) {#dose-compare}
+
+Normality screened per group (Shapiro–Wilk); both parametric (Welch t) and non-parametric (Mann–Whitney U) tests reported.
+
+- **Both groups are right-skewed and non-normal → Mann–Whitney U is the primary test.** The Welch t-test is unreliable here because two extreme values (day-0 = 701.7, day-2 = 425; see the data-quality flag above) inflate the bolus-group mean and hide the difference.
+- **Duration confounding:** cumulative dose reflects total exposure, not dosing intensity — a longer infusion accrues more drug at equal intensity. A dose-per-treatment-day comparison can be added later.
+
+```{r dose-compare}
+#| code-fold: true
+#| code-summary: "Show code"
+sw <- dose_df %>%
+  group_by(route) %>%
+  summarise(
+    n = n(),
+    shapiro_p = tryCatch(shapiro.test(cumulative_dose)$p.value,
+                         error = function(e) NA_real_),
+    .groups = "drop"
+  )
+
+vt <- tryCatch(var.test(cumulative_dose ~ route, data = dose_df), error = function(e) NULL)
+tt <- tryCatch(t.test(cumulative_dose ~ route, data = dose_df), error = function(e) NULL)   # Welch
+wt <- tryCatch(wilcox.test(cumulative_dose ~ route, data = dose_df), error = function(e) NULL)
+
+cat("Shapiro-Wilk normality by group:\n"); print(sw)
+cat(sprintf("\nEqual-variance F-test:  p = %s\n",
+            ifelse(is.null(vt), "NA", format.pval(vt$p.value, digits = 3))))
+cat(sprintf("Welch t-test:           p = %s  (mean difference = %.1f)\n",
+            ifelse(is.null(tt), "NA", format.pval(tt$p.value, digits = 3)),
+            ifelse(is.null(tt), NA_real_, unname(tt$estimate[1] - tt$estimate[2]))))
+cat(sprintf("Mann-Whitney U test:    p = %s\n",
+            ifelse(is.null(wt), "NA", format.pval(wt$p.value, digits = 3))))
+
+primary <- if (all(sw$shapiro_p > 0.05, na.rm = TRUE))
+  "Welch t-test (both groups pass normality)" else
+  "Mann-Whitney U (≥1 group non-normal) — recommended primary given small N"
+cat(sprintf("\nSuggested primary test: %s\n", primary))
+```
+
+### 8.3 Model 4 — Multivariable logistic: Any AE {#model4}
+
+`any_ae ~ sex_male + inr_admit + scr_terli_day0 + chest_imaging_effusion` (complete-case).
+
+```{r model4-anyae}
+#| code-fold: true
+#| code-summary: "Show code"
+m4 <- glm(any_ae ~ sex_male + inr_admit + scr_terli_day0 + chest_imaging_effusion,
+          family = binomial, data = final_master)
+
+tbl_regression(m4, exponentiate = TRUE,
+               pvalue_fun = ~style_pvalue(.x, digits = 3)) %>%
+  add_n() %>%
+  bold_p(0.05) %>%
+  bold_labels() %>%
+  modify_caption(sprintf(
+    "**Model 4 — Any AE (complete-case): N = %d, events = %d, EPV = %.1f**",
+    stats::nobs(m4), sum(m4$y), sum(m4$y) / 4))
+```
+
+### 8.4 Model 5 — Multivariable logistic: Serious AE {#model5}
+
+`serious_ae ~ sex_male + inr_admit + scr_terli_day0 + chest_imaging_effusion` (complete-case).
+
+```{r model5-seriousae}
+#| code-fold: true
+#| code-summary: "Show code"
+m5 <- glm(serious_ae ~ sex_male + inr_admit + scr_terli_day0 + chest_imaging_effusion,
+          family = binomial, data = final_master)
+
+tbl_regression(m5, exponentiate = TRUE,
+               pvalue_fun = ~style_pvalue(.x, digits = 3)) %>%
+  add_n() %>%
+  bold_p(0.05) %>%
+  bold_labels() %>%
+  modify_caption(sprintf(
+    "**Model 5 — Serious AE (complete-case): N = %d, events = %d, EPV = %.1f**",
+    stats::nobs(m5), sum(m5$y), sum(m5$y) / 4))
+```
+
+### 8.5 Model 6 — Multivariable logistic: Respiratory AE / Volume Overload {#model6}
+
+`terli_ae_respfail ~ sex_male + scr_terli_day0 + chest_imaging_effusion` (3 covariates, complete-case).
+
+```{r model6-respfail}
+#| code-fold: true
+#| code-summary: "Show code"
+m6 <- glm(terli_ae_respfail ~ sex_male + scr_terli_day0 + chest_imaging_effusion,
+          family = binomial, data = final_master)
+
+tbl_regression(m6, exponentiate = TRUE,
+               pvalue_fun = ~style_pvalue(.x, digits = 3)) %>%
+  add_n() %>%
+  bold_p(0.05) %>%
+  bold_labels() %>%
+  modify_caption(sprintf(
+    "**Model 6 — Respiratory AE (complete-case): N = %d, events = %d, EPV = %.1f**",
+    stats::nobs(m6), sum(m6$y), sum(m6$y) / 3))
+```
+
+### 8.6 Model diagnostics (complete-case) {#model-diagnostics}
+
+Effective sample, events, EPV, and a crude separation flag (any |β| > 10 or SE > 10, which signals quasi-complete separation — likely with few events + binary predictors). If flagged, treat ORs/CIs as unstable and consider Firth penalized logistic (`logistf`) as a later sensitivity analysis.
+
+```{r model-diagnostics}
+#| code-fold: true
+#| code-summary: "Show code"
+diag_row <- function(m, k, label) {
+  b <- coef(summary(m))
+  data.frame(
+    Model                 = label,
+    N                     = stats::nobs(m),
+    Events                = sum(m$y),
+    Covariates            = k,
+    EPV                   = round(sum(m$y) / k, 1),
+    `Separation?`         = ifelse(any(abs(b[, "Estimate"]) > 10 | b[, "Std. Error"] > 10,
+                                        na.rm = TRUE), "YES — check", "no"),
+    check.names = FALSE
+  )
+}
+knitr::kable(
+  rbind(diag_row(m4, 4, "4 — any_ae"),
+        diag_row(m5, 4, "5 — serious_ae"),
+        diag_row(m6, 3, "6 — terli_ae_respfail")),
+  row.names = FALSE,
+  caption = "Complete-case model diagnostics")
+```
+
+### 8.7 Model 7 — Fine–Gray competing-risk model {#model7}
+
+`any_ae + age + race + hispanic + admit_meld_3`, failcode = 1 (death), transplant competing. **Identical specification to §5 Model 1** — re-presented here so the 07/20 request is self-contained.
+
+```{r model7-finegray}
+#| code-fold: true
+#| code-summary: "Show code"
+tidycmprsk::crr(
+  Surv(time_to_death_90days_cmp, time_to_death_status_90days_cmp) ~
+    any_ae + age + race + hispanic + admit_meld_3,
+  failcode = 1, cencode = 0, data = final_master
+) %>%
+  tbl_regression(exp = TRUE, pvalue_fun = ~style_pvalue(.x, digits = 3)) %>%
+  add_n() %>%
+  bold_p(0.05) %>%
+  bold_labels() %>%
+  modify_caption("**Model 7 — Fine–Gray, 90-day mortality (failcode = 1, death); identical to §5 Model 1**")
+```

@@ -653,7 +653,7 @@ dose_summary <- dose_df %>%
   group_by(route) %>%
   summarise(
     N              = n(),
-    `Mean ± SD`    = sprintf("%.1f ± %.1f", mean(cumulative_dose), sd(cumulative_dose)),
+    `Mean +/- SD`  = sprintf("%.1f +/- %.1f", mean(cumulative_dose), sd(cumulative_dose)),
     `Median [IQR]` = sprintf("%.1f [%.1f, %.1f]", median(cumulative_dose),
                              quantile(cumulative_dose, .25), quantile(cumulative_dose, .75)),
     `Min, Max`     = sprintf("%.1f, %.1f", min(cumulative_dose), max(cumulative_dose)),
@@ -662,7 +662,7 @@ dose_summary <- dose_df %>%
   )
 
 knitr::kable(dose_summary,
-             caption = "Per-patient cumulative terlipressin dose (day 0–13) by day-0 route")
+             caption = "Per-patient cumulative terlipressin dose (day 0-13) by day-0 route")
 
 # --- Data-quality flag: implausible daily doses (typical terli <= ~12 mg/day) ---
 flag <- dose_df %>%
@@ -673,7 +673,7 @@ flag <- dose_df %>%
   filter(max_daily > 50) %>%
   select(route, any_of(c("record_id", "study_id")), max_daily)
 if (nrow(flag) > 0) {
-  cat("DATA-QUALITY FLAG — daily dose > 50 mg (likely entry error; inflates the mean/t-test):\n")
+  cat("DATA-QUALITY FLAG - daily dose > 50 mg (likely entry error; inflates the mean/t-test):\n")
   print(as.data.frame(flag))
 }
 ```
@@ -712,7 +712,7 @@ cat(sprintf("Mann-Whitney U test:    p = %s\n",
 
 primary <- if (all(sw$shapiro_p > 0.05, na.rm = TRUE))
   "Welch t-test (both groups pass normality)" else
-  "Mann-Whitney U (≥1 group non-normal) — recommended primary given small N"
+  "Mann-Whitney U (>=1 group non-normal) - recommended primary given small N"
 cat(sprintf("\nSuggested primary test: %s\n", primary))
 ```
 
@@ -732,7 +732,7 @@ tbl_regression(m4, exponentiate = TRUE,
   bold_p(0.05) %>%
   bold_labels() %>%
   modify_caption(sprintf(
-    "**Model 4 — Any AE (complete-case): N = %d, events = %d, EPV = %.1f**",
+    "**Model 4 - Any AE (complete-case): N = %d, events = %d, EPV = %.1f**",
     stats::nobs(m4), sum(m4$y), sum(m4$y) / 4))
 ```
 
@@ -752,7 +752,7 @@ tbl_regression(m5, exponentiate = TRUE,
   bold_p(0.05) %>%
   bold_labels() %>%
   modify_caption(sprintf(
-    "**Model 5 — Serious AE (complete-case): N = %d, events = %d, EPV = %.1f**",
+    "**Model 5 - Serious AE (complete-case): N = %d, events = %d, EPV = %.1f**",
     stats::nobs(m5), sum(m5$y), sum(m5$y) / 4))
 ```
 
@@ -772,7 +772,7 @@ tbl_regression(m6, exponentiate = TRUE,
   bold_p(0.05) %>%
   bold_labels() %>%
   modify_caption(sprintf(
-    "**Model 6 — Respiratory AE (complete-case): N = %d, events = %d, EPV = %.1f**",
+    "**Model 6 - Respiratory AE (complete-case): N = %d, events = %d, EPV = %.1f**",
     stats::nobs(m6), sum(m6$y), sum(m6$y) / 3))
 ```
 
@@ -792,14 +792,14 @@ diag_row <- function(m, k, label) {
     Covariates            = k,
     EPV                   = round(sum(m$y) / k, 1),
     `Separation?`         = ifelse(any(abs(b[, "Estimate"]) > 10 | b[, "Std. Error"] > 10,
-                                        na.rm = TRUE), "YES — check", "no"),
+                                        na.rm = TRUE), "YES - check", "no"),
     check.names = FALSE
   )
 }
 knitr::kable(
-  rbind(diag_row(m4, 4, "4 — any_ae"),
-        diag_row(m5, 4, "5 — serious_ae"),
-        diag_row(m6, 3, "6 — terli_ae_respfail")),
+  rbind(diag_row(m4, 4, "4 - any_ae"),
+        diag_row(m5, 4, "5 - serious_ae"),
+        diag_row(m6, 3, "6 - terli_ae_respfail")),
   row.names = FALSE,
   caption = "Complete-case model diagnostics")
 ```
@@ -820,5 +820,5 @@ tidycmprsk::crr(
   add_n() %>%
   bold_p(0.05) %>%
   bold_labels() %>%
-  modify_caption("**Model 7 — Fine–Gray, 90-day mortality (failcode = 1, death); identical to §5 Model 1**")
+  modify_caption("**Model 7 - Fine-Gray, 90-day mortality (failcode = 1, death); identical to Sec. 5 Model 1**")
 ```
